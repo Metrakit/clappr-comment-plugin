@@ -23,6 +23,8 @@ class Testcore extends UiCorePlugin {
   hoverBar(event) {
   	console.log(event.pageX);
   	console.log(event.timeStamp);
+    // A TESt :
+    //console.log(this.core.playback.getDuration()); 
   }
 
 }
