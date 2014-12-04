@@ -18,13 +18,20 @@ class Testcore extends UiCorePlugin {
 
   bindEvents() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
+    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
   }
 
   hoverBar(event) {
   	console.log(event.pageX);
   	console.log(event.timeStamp);
+    console.log(this.core); 
+    this.timeUpdate();
     // A TESt :
-    //console.log(this.core.playback.getDuration()); 
+    //console.log(this.core.mediaControl.container); 
+  }
+
+  timeUpdate(position, duration) {
+    console.log(position);
   }
 
 }

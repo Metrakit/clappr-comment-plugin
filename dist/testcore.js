@@ -19,10 +19,16 @@ var $Testcore = Testcore;
   },
   bindEvents: function() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar);
+    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
   },
   hoverBar: function(event) {
     console.log(event.pageX);
     console.log(event.timeStamp);
+    console.log(this.core);
+    this.timeUpdate();
+  },
+  timeUpdate: function(position, duration) {
+    console.log(position);
   }
 }, {}, UiCorePlugin);
 module.exports = window.Testcore = Testcore;
