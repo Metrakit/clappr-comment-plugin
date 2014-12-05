@@ -22,10 +22,12 @@ var $Testcore = Testcore;
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
   },
   hoverBar: function(event) {
-    console.log(event.pageX);
-    console.log(event.timeStamp);
-    console.log(this.core);
-    this.timeUpdate();
+    var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
+    var currentWidth = event.pageX;
+    var diff = width - currentWidth;
+    var percent = 100 - ((diff / width) * 100);
+    $('.bob').text(Math.round(percent) + '%');
+    console.log(this.$playWrapper);
   },
   timeUpdate: function(position, duration) {
     console.log(position);

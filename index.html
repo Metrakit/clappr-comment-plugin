@@ -8,23 +8,33 @@
   <script type="text/javascript" charset="utf-8" src="dist/testcore.js"></script>
   <title>testcore Test Page</title>
   <script type="text/javascript" charset="utf-8">
-window.onload = function() {
+  window.onload = function() {
   var player = new Clappr.Player({
     sources: ['http://www.html5rocks.com/en/tutorials/video/basics/devstories.mp4'],
     width: 800,
     plugins: {
       core: [Testcore]
     }
-
-    
   });
+
+  var player2 = new Clappr.Player({
+    sources: ['http://www.html5rocks.com/en/tutorials/video/basics/devstories.mp4'],
+    width: 400,
+    plugins: {
+      core: [Testcore]
+    }
+  });
+
   player.attachTo(document.getElementById('player-wrapper'));
+
+  player2.attachTo(document.getElementById('player2-wrapper'));
 }
   </script>
 </head>
 <body>
-  <div id="player-wrapper">
-  </div>
+  <div id="player-wrapper"></div>
+  <p class="bob">0%</p>
+  <div id="player2-wrapper"></div>
 </body>
 </html>
 
