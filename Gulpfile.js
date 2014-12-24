@@ -32,7 +32,7 @@ gulp.task('build', ['pre-build'], function(b) {
     .external('ui_object')
     .external('base_object')
     .external('browser')
-    .external('jquery')
+    .external('zepto')
     .external('underscore')
     .external('media_control')
     .external('playback')
@@ -55,7 +55,7 @@ gulp.task('release', ['pre-build'], function() {
     .external('ui_object')
     .external('base_object')
     .external('browser')
-    .external('jquery')
+    .external('zepto')
     .external('underscore')
     .external('media_control')
     .external('playback')
@@ -101,7 +101,7 @@ gulp.task('serve', ['build', 'watch'], function() {
 gulp.task('watch', function() {
   var reloadServer = livereload();
 
-  var js = gulp.watch('./*.js');
+  var js = gulp.watch('./src/*.js');
   js.on('change', function(event) {
     gulp.start('build', function() {
       reloadServer.changed(event.path);

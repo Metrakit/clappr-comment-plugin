@@ -1,54 +1,541 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
-var UiCorePlugin = require('ui_core_plugin');
-var JST = require('./jst');
-var Testcore = function Testcore(core) {
-  $traceurRuntime.superCall(this, $Testcore.prototype, "constructor", [core]);
-  this.core = core;
+module.exports = require("./src/main");
+
+
+//# sourceURL=C:/wamp/www/clappr-test-plugin/index.js
+},{"./src/main":7}],2:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
 };
-var $Testcore = Testcore;
-($traceurRuntime.createClass)(Testcore, {
-  get name() {
-    return 'testcore';
-  },
-  render: function() {
-    console.log("rendering", this.name);
-    var style = $('<style>').html(JST.CSS[this.name]);
-    this.$el.append(style);
-    return this;
-  },
-  bindEvents: function() {
-    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar);
-    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
-  },
-  hoverBar: function(event) {
-    var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
-    var currentWidth = event.pageX;
-    var diff = width - currentWidth;
-    var percent = 100 - ((diff / width) * 100);
-    $('.bob').text(Math.round(percent) + '%');
-    console.log(this.$playWrapper);
-  },
-  timeUpdate: function(position, duration) {
-    console.log(position);
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
   }
-}, {}, UiCorePlugin);
-module.exports = window.Testcore = Testcore;
 
-//# sourceMappingURL=<compileOutput>
+  handler = this._events[type];
 
+  if (isUndefined(handler))
+    return false;
 
-},{"./jst":2,"ui_core_plugin":"ui_core_plugin"}],2:[function(require,module,exports){
-(function (global){
-"use strict";
-var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
-module.exports = {CSS: {}};
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        len = arguments.length;
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++)
+          args[i - 1] = arguments[i];
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    len = arguments.length;
+    args = new Array(len - 1);
+    for (i = 1; i < len; i++)
+      args[i - 1] = arguments[i];
 
-//# sourceMappingURL=<compileOutput>
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
 
+  return true;
+};
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    var m;
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (isFunction(emitter._events[type]))
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
 },{}],3:[function(require,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+}
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+var splitPathRe =
+    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function(filename) {
+  return splitPathRe.exec(filename).slice(1);
+};
+
+// path.resolve([from ...], to)
+// posix version
+exports.resolve = function() {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+    // Skip empty and invalid entries
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+
+  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+// path.normalize(path)
+// posix version
+exports.normalize = function(path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/';
+
+  // Normalize the path
+  path = normalizeArray(filter(path.split('/'), function(p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+};
+
+// posix version
+exports.isAbsolute = function(path) {
+  return path.charAt(0) === '/';
+};
+
+// posix version
+exports.join = function() {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function(p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+    return p;
+  }).join('/'));
+};
+
+
+// path.relative(from, to)
+// posix version
+exports.relative = function(from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
+
+  function trim(arr) {
+    var start = 0;
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
+
+    var end = arr.length - 1;
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
+
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
+
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
+
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function(path) {
+  var result = splitPath(path),
+      root = result[0],
+      dir = result[1];
+
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+
+  return root + dir;
+};
+
+
+exports.basename = function(path, ext) {
+  var f = splitPath(path)[2];
+  // TODO: make this comparison case-insensitive on windows?
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+  return f;
+};
+
+
+exports.extname = function(path) {
+  return splitPath(path)[3];
+};
+
+function filter (xs, f) {
+    if (xs.filter) return xs.filter(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        if (f(xs[i], i, xs)) res.push(xs[i]);
+    }
+    return res;
+}
+
+// String.prototype.substr - negative index don't work in IE8
+var substr = 'ab'.substr(-1) === 'b'
+    ? function (str, start, len) { return str.substr(start, len) }
+    : function (str, start, len) {
+        if (start < 0) start = str.length + start;
+        return str.substr(start, len);
+    }
+;
+
+}).call(this,require('_process'))
+},{"_process":4}],4:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -136,7 +623,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (process,global){
 (function(global) {
   'use strict';
@@ -165,13 +652,6 @@ process.chdir = function (dir) {
       writable: true
     };
   }
-  var types = {
-    void: function voidType() {},
-    any: function any() {},
-    string: function string() {},
-    number: function number() {},
-    boolean: function boolean() {}
-  };
   var method = nonEnum;
   var counter = 0;
   function newUniqueString() {
@@ -399,10 +879,29 @@ process.chdir = function (dir) {
     setupGlobals: setupGlobals,
     toObject: toObject,
     toProperty: toProperty,
-    type: types,
     typeof: typeOf
   };
-})(typeof global !== 'undefined' ? global : this);
+})(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this);
+(function() {
+  'use strict';
+  var path;
+  function relativeRequire(callerPath, requiredPath) {
+    path = path || typeof require !== 'undefined' && require('path');
+    function isDirectory(path) {
+      return path.slice(-1) === '/';
+    }
+    function isAbsolute(path) {
+      return path[0] === '/';
+    }
+    function isRelative(path) {
+      return path[0] === '.';
+    }
+    if (isDirectory(requiredPath) || isAbsolute(requiredPath))
+      return;
+    return isRelative(requiredPath) ? require(path.resolve(path.dirname(callerPath), requiredPath)) : require(requiredPath);
+  }
+  $traceurRuntime.require = relativeRequire;
+})();
 (function() {
   'use strict';
   function spread() {
@@ -445,6 +944,9 @@ process.chdir = function (dir) {
       proto = $getPrototypeOf(proto);
     } while (proto);
     return undefined;
+  }
+  function superConstructor(ctor) {
+    return ctor.__proto__;
   }
   function superCall(self, homeObject, name, args) {
     return superGet(self, homeObject, name).apply(self, args);
@@ -518,11 +1020,15 @@ process.chdir = function (dir) {
   $traceurRuntime.createClass = createClass;
   $traceurRuntime.defaultSuperCall = defaultSuperCall;
   $traceurRuntime.superCall = superCall;
+  $traceurRuntime.superConstructor = superConstructor;
   $traceurRuntime.superGet = superGet;
   $traceurRuntime.superSet = superSet;
 })();
 (function() {
   'use strict';
+  if (typeof $traceurRuntime !== 'object') {
+    throw new Error('traceur runtime not found.');
+  }
   var createPrivateName = $traceurRuntime.createPrivateName;
   var $defineProperties = $traceurRuntime.defineProperties;
   var $defineProperty = $traceurRuntime.defineProperty;
@@ -869,6 +1375,50 @@ process.chdir = function (dir) {
   $traceurRuntime.removeDotSegments = removeDotSegments;
   $traceurRuntime.resolveUrl = resolveUrl;
 })();
+(function() {
+  'use strict';
+  var types = {
+    any: {name: 'any'},
+    boolean: {name: 'boolean'},
+    number: {name: 'number'},
+    string: {name: 'string'},
+    symbol: {name: 'symbol'},
+    void: {name: 'void'}
+  };
+  var GenericType = function GenericType(type, argumentTypes) {
+    this.type = type;
+    this.argumentTypes = argumentTypes;
+  };
+  ($traceurRuntime.createClass)(GenericType, {}, {});
+  var typeRegister = Object.create(null);
+  function genericType(type) {
+    for (var argumentTypes = [],
+        $__1 = 1; $__1 < arguments.length; $__1++)
+      argumentTypes[$__1 - 1] = arguments[$__1];
+    var typeMap = typeRegister;
+    var key = $traceurRuntime.getOwnHashObject(type).hash;
+    if (!typeMap[key]) {
+      typeMap[key] = Object.create(null);
+    }
+    typeMap = typeMap[key];
+    for (var i = 0; i < argumentTypes.length - 1; i++) {
+      key = $traceurRuntime.getOwnHashObject(argumentTypes[i]).hash;
+      if (!typeMap[key]) {
+        typeMap[key] = Object.create(null);
+      }
+      typeMap = typeMap[key];
+    }
+    var tail = argumentTypes[argumentTypes.length - 1];
+    key = $traceurRuntime.getOwnHashObject(tail).hash;
+    if (!typeMap[key]) {
+      typeMap[key] = new GenericType(type, argumentTypes);
+    }
+    return typeMap[key];
+  }
+  $traceurRuntime.GenericType = GenericType;
+  $traceurRuntime.genericType = genericType;
+  $traceurRuntime.type = types;
+})();
 (function(global) {
   'use strict';
   var $__2 = $traceurRuntime,
@@ -919,8 +1469,35 @@ process.chdir = function (dir) {
       return stack.join('\n');
     }
   }, {}, Error);
+  function beforeLines(lines, number) {
+    var result = [];
+    var first = number - 3;
+    if (first < 0)
+      first = 0;
+    for (var i = first; i < number; i++) {
+      result.push(lines[i]);
+    }
+    return result;
+  }
+  function afterLines(lines, number) {
+    var last = number + 1;
+    if (last > lines.length - 1)
+      last = lines.length - 1;
+    var result = [];
+    for (var i = number; i <= last; i++) {
+      result.push(lines[i]);
+    }
+    return result;
+  }
+  function columnSpacing(columns) {
+    var result = '';
+    for (var i = 0; i < columns - 1; i++) {
+      result += '-';
+    }
+    return result;
+  }
   var UncoatedModuleInstantiator = function UncoatedModuleInstantiator(url, func) {
-    $traceurRuntime.superCall(this, $UncoatedModuleInstantiator.prototype, "constructor", [url, null]);
+    $traceurRuntime.superConstructor($UncoatedModuleInstantiator).call(this, url, null);
     this.func = func;
   };
   var $UncoatedModuleInstantiator = UncoatedModuleInstantiator;
@@ -928,11 +1505,34 @@ process.chdir = function (dir) {
       if (this.value_)
         return this.value_;
       try {
-        return this.value_ = this.func.call(global);
+        var relativeRequire;
+        if (typeof $traceurRuntime !== undefined) {
+          relativeRequire = $traceurRuntime.require.bind(null, this.url);
+        }
+        return this.value_ = this.func.call(global, relativeRequire);
       } catch (ex) {
         if (ex instanceof ModuleEvaluationError) {
           ex.loadedBy(this.url);
           throw ex;
+        }
+        if (ex.stack) {
+          var lines = this.func.toString().split('\n');
+          var evaled = [];
+          ex.stack.split('\n').some(function(frame) {
+            if (frame.indexOf('UncoatedModuleInstantiator.getUncoatedModule') > 0)
+              return true;
+            var m = /(at\s[^\s]*\s).*>:(\d*):(\d*)\)/.exec(frame);
+            if (m) {
+              var line = parseInt(m[2], 10);
+              evaled = evaled.concat(beforeLines(lines, line));
+              evaled.push(columnSpacing(m[3]) + '^');
+              evaled = evaled.concat(afterLines(lines, line));
+              evaled.push('= = = = = = = = =');
+            } else {
+              evaled.push(frame);
+            }
+          });
+          ex.stack = evaled.join('\n');
         }
         throw new ModuleEvaluationError(this.url, ex);
       }
@@ -973,8 +1573,8 @@ process.chdir = function (dir) {
   }
   var ModuleStore = {
     normalize: function(name, refererName, refererAddress) {
-      if (typeof name !== "string")
-        throw new TypeError("module name must be a string, not " + typeof name);
+      if (typeof name !== 'string')
+        throw new TypeError('module name must be a string, not ' + typeof name);
       if (isAbsolute(name))
         return canonicalizeUrl(name);
       if (/[^\.]\/\.\.\//.test(name)) {
@@ -1007,7 +1607,7 @@ process.chdir = function (dir) {
     set baseURL(v) {
       baseURL = String(v);
     },
-    registerModule: function(name, func) {
+    registerModule: function(name, deps, func) {
       var normalizedName = ModuleStore.normalize(name);
       if (moduleInstantiators[normalizedName])
         throw new Error('duplicate module named ' + normalizedName);
@@ -1016,7 +1616,7 @@ process.chdir = function (dir) {
     bundleStore: Object.create(null),
     register: function(name, deps, func) {
       if (!deps || !deps.length && !func.length) {
-        this.registerModule(name, func);
+        this.registerModule(name, deps, func);
       } else {
         this.bundleStore[name] = {
           deps: deps,
@@ -1050,7 +1650,9 @@ process.chdir = function (dir) {
       return this.get(this.testingPrefix_ + name);
     }
   };
-  ModuleStore.set('@traceur/src/runtime/ModuleStore', new Module({ModuleStore: ModuleStore}));
+  var moduleStoreModule = new Module({ModuleStore: ModuleStore});
+  ModuleStore.set('@traceur/src/runtime/ModuleStore', moduleStoreModule);
+  ModuleStore.set('@traceur/src/runtime/ModuleStore.js', moduleStoreModule);
   var setupGlobals = $traceurRuntime.setupGlobals;
   $traceurRuntime.setupGlobals = function(global) {
     setupGlobals(global);
@@ -1058,6 +1660,7 @@ process.chdir = function (dir) {
   $traceurRuntime.ModuleStore = ModuleStore;
   global.System = {
     register: ModuleStore.register.bind(ModuleStore),
+    registerModule: ModuleStore.registerModule.bind(ModuleStore),
     get: ModuleStore.get,
     set: ModuleStore.set,
     normalize: ModuleStore.normalize
@@ -1066,10 +1669,10 @@ process.chdir = function (dir) {
     var instantiator = getUncoatedModuleInstantiator(name);
     return instantiator && instantiator.getUncoatedModule();
   };
-})(typeof global !== 'undefined' ? global : this);
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/utils", [], function() {
+})(typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : this);
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/utils";
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/utils.js";
   var $ceil = Math.ceil;
   var $floor = Math.floor;
   var $isFinite = isFinite;
@@ -1227,10 +1830,10 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/utils", [], functi
     }
   };
 });
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Map", [], function() {
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Map.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Map";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Map.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       isObject = $__0.isObject,
       maybeAddIterator = $__0.maybeAddIterator,
       registerPolyfill = $__0.registerPolyfill;
@@ -1262,7 +1865,7 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Map", [], function
     }
     initMap(this);
     if (iterable !== null && iterable !== undefined) {
-      for (var $__2 = iterable[Symbol.iterator](),
+      for (var $__2 = iterable[$traceurRuntime.toProperty(Symbol.iterator)](),
           $__3; !($__3 = $__2.next()).done; ) {
         var $__4 = $__3.value,
             key = $__4[0],
@@ -1492,15 +2095,15 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Map", [], function
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Map" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Set", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Map.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Set.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Set";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Set.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       isObject = $__0.isObject,
       maybeAddIterator = $__0.maybeAddIterator,
       registerPolyfill = $__0.registerPolyfill;
-  var Map = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Map").Map;
+  var Map = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Map.js").Map;
   var getOwnHashObject = $traceurRuntime.getOwnHashObject;
   var $hasOwnProperty = Object.prototype.hasOwnProperty;
   function initSet(set) {
@@ -1515,7 +2118,7 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Set", [], function
     }
     initSet(this);
     if (iterable !== null && iterable !== undefined) {
-      for (var $__4 = iterable[Symbol.iterator](),
+      for (var $__4 = iterable[$traceurRuntime.toProperty(Symbol.iterator)](),
           $__5; !($__5 = $__4.next()).done; ) {
         var item = $__5.value;
         {
@@ -1645,10 +2248,10 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Set", [], function
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Set" + '');
-System.register("traceur-runtime@0.0.72/node_modules/rsvp/lib/rsvp/asap", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Set.js" + '');
+System.registerModule("traceur-runtime@0.0.79/node_modules/rsvp/lib/rsvp/asap.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/node_modules/rsvp/lib/rsvp/asap";
+  var __moduleName = "traceur-runtime@0.0.79/node_modules/rsvp/lib/rsvp/asap.js";
   var len = 0;
   function asap(callback, arg) {
     queue[len] = callback;
@@ -1713,11 +2316,11 @@ System.register("traceur-runtime@0.0.72/node_modules/rsvp/lib/rsvp/asap", [], fu
       return $__default;
     }};
 });
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Promise", [], function() {
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Promise.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Promise";
-  var async = System.get("traceur-runtime@0.0.72/node_modules/rsvp/lib/rsvp/asap").default;
-  var registerPolyfill = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils").registerPolyfill;
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Promise.js";
+  var async = System.get("traceur-runtime@0.0.79/node_modules/rsvp/lib/rsvp/asap.js").default;
+  var registerPolyfill = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js").registerPolyfill;
   var promiseRaw = {};
   function isPromise(x) {
     return x && typeof x === 'object' && x.status_ !== undefined;
@@ -1954,12 +2557,12 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Promise", [], func
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Promise" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/StringIterator", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Promise.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/StringIterator.js", [], function() {
   "use strict";
   var $__2;
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/StringIterator";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/StringIterator.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       createIteratorResultObject = $__0.createIteratorResultObject,
       isObject = $__0.isObject;
   var toProperty = $traceurRuntime.toProperty;
@@ -2020,11 +2623,11 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/StringIterator", [
       return createStringIterator;
     }};
 });
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/String", [], function() {
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/String.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/String";
-  var createStringIterator = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/StringIterator").createStringIterator;
-  var $__1 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/String.js";
+  var createStringIterator = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/StringIterator.js").createStringIterator;
+  var $__1 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       maybeAddFunctions = $__1.maybeAddFunctions,
       maybeAddIterator = $__1.maybeAddIterator,
       registerPolyfill = $__1.registerPolyfill;
@@ -2072,20 +2675,26 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/String", [], funct
     }
     return $lastIndexOf.call(string, searchString, start) == start;
   }
-  function contains(search) {
+  function includes(search) {
     if (this == null) {
       throw TypeError();
     }
     var string = String(this);
+    if (search && $toString.call(search) == '[object RegExp]') {
+      throw TypeError();
+    }
     var stringLength = string.length;
     var searchString = String(search);
     var searchLength = searchString.length;
     var position = arguments.length > 1 ? arguments[1] : undefined;
     var pos = position ? Number(position) : 0;
-    if (isNaN(pos)) {
+    if (pos != pos) {
       pos = 0;
     }
     var start = Math.min(Math.max(pos, 0), stringLength);
+    if (searchLength + start > stringLength) {
+      return false;
+    }
     return $indexOf.call(string, searchString, pos) != -1;
   }
   function repeat(count) {
@@ -2179,7 +2788,7 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/String", [], funct
   }
   function polyfillString(global) {
     var String = global.String;
-    maybeAddFunctions(String.prototype, ['codePointAt', codePointAt, 'contains', contains, 'endsWith', endsWith, 'startsWith', startsWith, 'repeat', repeat]);
+    maybeAddFunctions(String.prototype, ['codePointAt', codePointAt, 'endsWith', endsWith, 'includes', includes, 'repeat', repeat, 'startsWith', startsWith]);
     maybeAddFunctions(String, ['fromCodePoint', fromCodePoint, 'raw', raw]);
     maybeAddIterator(String.prototype, stringPrototypeIterator, Symbol);
   }
@@ -2191,8 +2800,8 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/String", [], funct
     get endsWith() {
       return endsWith;
     },
-    get contains() {
-      return contains;
+    get includes() {
+      return includes;
     },
     get repeat() {
       return repeat;
@@ -2214,12 +2823,12 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/String", [], funct
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/String" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/ArrayIterator", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/String.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/ArrayIterator.js", [], function() {
   "use strict";
   var $__2;
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/ArrayIterator";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/ArrayIterator.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       toObject = $__0.toObject,
       toUint32 = $__0.toUint32,
       createIteratorResultObject = $__0.createIteratorResultObject;
@@ -2288,14 +2897,14 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/ArrayIterator", []
     }
   };
 });
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Array", [], function() {
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Array.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Array";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/ArrayIterator"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Array.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/ArrayIterator.js"),
       entries = $__0.entries,
       keys = $__0.keys,
       values = $__0.values;
-  var $__1 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var $__1 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       checkIterable = $__1.checkIterable,
       isCallable = $__1.isCallable,
       isConstructor = $__1.isConstructor,
@@ -2319,7 +2928,7 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Array", [], functi
     }
     if (checkIterable(items)) {
       arr = isConstructor(C) ? new C() : [];
-      for (var $__2 = items[Symbol.iterator](),
+      for (var $__2 = items[$traceurRuntime.toProperty(Symbol.iterator)](),
           $__3; !($__3 = $__2.next()).done; ) {
         var item = $__3.value;
         {
@@ -2432,11 +3041,11 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Array", [], functi
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Array" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Object", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Array.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Object.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Object";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Object.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       maybeAddFunctions = $__0.maybeAddFunctions,
       registerPolyfill = $__0.registerPolyfill;
   var $__1 = $traceurRuntime,
@@ -2453,7 +3062,7 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Object", [], funct
   function assign(target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
-      var props = keys(source);
+      var props = source == null ? [] : keys(source);
       var p,
           length = props.length;
       for (p = 0; p < length; p++) {
@@ -2499,11 +3108,11 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Object", [], funct
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Object" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Number", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Object.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/Number.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/Number";
-  var $__0 = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils"),
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/Number.js";
+  var $__0 = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js"),
       isNumber = $__0.isNumber,
       maybeAddConsts = $__0.maybeAddConsts,
       maybeAddFunctions = $__0.maybeAddFunctions,
@@ -2567,12 +3176,12 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/Number", [], funct
     }
   };
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/Number" + '');
-System.register("traceur-runtime@0.0.72/src/runtime/polyfills/polyfills", [], function() {
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/Number.js" + '');
+System.registerModule("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js", [], function() {
   "use strict";
-  var __moduleName = "traceur-runtime@0.0.72/src/runtime/polyfills/polyfills";
-  var polyfillAll = System.get("traceur-runtime@0.0.72/src/runtime/polyfills/utils").polyfillAll;
-  polyfillAll(this);
+  var __moduleName = "traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js";
+  var polyfillAll = System.get("traceur-runtime@0.0.79/src/runtime/polyfills/utils.js").polyfillAll;
+  polyfillAll(Reflect.global);
   var setupGlobals = $traceurRuntime.setupGlobals;
   $traceurRuntime.setupGlobals = function(global) {
     setupGlobals(global);
@@ -2580,7 +3189,100 @@ System.register("traceur-runtime@0.0.72/src/runtime/polyfills/polyfills", [], fu
   };
   return {};
 });
-System.get("traceur-runtime@0.0.72/src/runtime/polyfills/polyfills" + '');
+System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":3}]},{},[4,1]);
+},{"_process":4,"path":3}],6:[function(require,module,exports){
+(function (global){
+"use strict";
+var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
+module.exports = {
+  'buttonAddComment': _.template('<div class="add-comment">Comment</div>'),
+  CSS: {'buttonAddComment': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}'}
+};
+
+
+//# sourceURL=C:/wamp/www/clappr-test-plugin/src/jst.js
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],7:[function(require,module,exports){
+"use strict";
+var UiCorePlugin = require('ui_core_plugin');
+var JST = require('./jst');
+var Styler = require('./styler');
+var Events = require('events');
+var Testcore = function Testcore(core) {
+  $traceurRuntime.superConstructor($Testcore).call(this, core);
+  this.core = core;
+  this.render();
+  this.percentTime = 0;
+  this.actualTime = 0;
+  this.percentHoverTime = 0;
+};
+var $Testcore = Testcore;
+($traceurRuntime.createClass)(Testcore, {
+  get name() {
+    return 'testcore';
+  },
+  get events() {
+    return {'click .add-comment': 'click'};
+  },
+  get attributes() {
+    return {
+      'class': 'comments-controls',
+      'data-comments-controls': ''
+    };
+  },
+  render: function() {
+    var style = Styler.getStyleFor('buttonAddComment');
+    this.$el.html(JST.buttonAddComment);
+    this.$el.append(style);
+    this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
+    return this;
+  },
+  click: function() {
+    this.core.mediaControl.container.pause();
+    this.$playButton.addClass('paused');
+    this.timeUpdate;
+    console.log('click on button, temps actuel: ' + this.percentTime + '%');
+    console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes');
+  },
+  settingsUpdate: function() {},
+  bindEvents: function() {
+    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar);
+    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
+  },
+  hoverBar: function(event) {
+    this.render();
+    var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
+    var currentWidth = event.pageX;
+    var diff = width - currentWidth;
+    this.percentHoverTime = 100 - ((diff / width) * 100);
+    $('.bob').text(Math.round(this.percentHoverTime) + '%');
+  },
+  timeUpdate: function(position, duration) {
+    this.actualTime = position;
+    this.percentTime = ((position / duration) * 100);
+    $('.bob2').text(Math.round(this.percentTime) + '%');
+  }
+}, {}, UiCorePlugin);
+module.exports = window.Testcore = Testcore;
+
+
+//# sourceURL=C:/wamp/www/clappr-test-plugin/src/main.js
+},{"./jst":6,"./styler":8,"events":2,"ui_core_plugin":"ui_core_plugin"}],8:[function(require,module,exports){
+(function (global){
+"use strict";
+var $ = require('zepto');
+var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
+var JST = require('./jst');
+var Styler = {getStyleFor: function(name, options) {
+    options = options || {};
+    return $('<style class="clappr-style"></style>').html(_.template(JST.CSS[name])(options))[0];
+  }};
+module.exports = Styler;
+
+
+//# sourceURL=C:/wamp/www/clappr-test-plugin/src/styler.js
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./jst":6,"zepto":"zepto"}]},{},[5,1]);

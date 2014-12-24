@@ -10,12 +10,18 @@ var _ = require('underscore');
 
 var codeTemplate = _.template(fs.readFileSync('bin/.hook_template').toString());
 
-var jstFile = './jst.js';
+var jstFile = './src/jst.js';
 
-function format(filePath) {
+function formatAddButton(filePath) {
   var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
-  return {name: 'testcore', content: content};
+  return {name: 'buttonAddComment', content: content};
 }
+
+function formatBarComments(filePath) {
+  var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
+  return {name: 'buttonBarComments', content: content};
+}
+
 
 function copyFiles(asset) {
   var targetDir = path.extname(asset) === '.js' ? 'dist/' : 'dist/assets';
@@ -23,10 +29,20 @@ function copyFiles(asset) {
     .pipe(fs.createWriteStream(path.join(targetDir, path.basename(asset))));
 }
 
-var templates = glob('build/**/*.html').map(format);
-var styles = glob('build/**/*.css').map(format);
 
-fs.writeFileSync(jstFile, codeTemplate({templates: templates, styles: styles}));
+
+var templates = glob('build/add.html').map(formatAddButton);
+var stylesAdd = glob('build/add.css').map(formatAddButton);
+
+/*var templates = new Array;
+templates.push(glob('build/add.html').map(formatAddButton));
+templates.push(glob('build/bar.html').map(formatBarComments));*/
+/*templates = templates + glob('build/bar.html').map(formatBarComments);
+var stylesBar = glob('build/bar.css').map(formatBarComments);*/
+
+fs.writeFileSync(jstFile, codeTemplate({templates: templates, styles: stylesAdd}));
+
+//fs.writeFileSync(jstFile, codeTemplate({templates: templatesBar, styles: stylesBar}));
 
 mkdirp('dist/assets/');
 
