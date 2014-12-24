@@ -2,11 +2,15 @@
 var _ = require('underscore');
 module.exports = {
 
-  'buttonAddComment': _.template('<div class="add-comment">Comment</div>'),
+  'add': _.template('<div class="add-comment">Comment</div>'),
+
+  'bar': _.template('<div class="bar-comments">Comment</div>'),
 
   CSS: {
     
-      'buttonAddComment': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}',
+      'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}',
+    
+      'bar': '.bar-comments{background:red}',
     
   }
 };

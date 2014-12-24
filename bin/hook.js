@@ -8,18 +8,13 @@ var path = require('path');
 var fs = require('fs');
 var _ = require('underscore');
 
+
 var codeTemplate = _.template(fs.readFileSync('bin/.hook_template').toString());
 
 var jstFile = './src/jst.js';
 
-function formatAddButton(filePath) {
-  var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
-  return {name: 'buttonAddComment', content: content};
-}
-
-function formatBarComments(filePath) {
-  var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
-  return {name: 'buttonBarComments', content: content};
+function format(filePath) {
+  return fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
 }
 
 
@@ -31,18 +26,18 @@ function copyFiles(asset) {
 
 
 
-var templates = glob('build/add.html').map(formatAddButton);
-var stylesAdd = glob('build/add.css').map(formatAddButton);
+var html = [
+  {name: 'add', content: glob('build/add.html').map(format)},
+  {name: 'bar', content: glob('build/bar.html').map(format)},
+];
 
-/*var templates = new Array;
-templates.push(glob('build/add.html').map(formatAddButton));
-templates.push(glob('build/bar.html').map(formatBarComments));*/
-/*templates = templates + glob('build/bar.html').map(formatBarComments);
-var stylesBar = glob('build/bar.css').map(formatBarComments);*/
+var css = [
+  {name: 'add', content: glob('build/add.css').map(format)},
+  {name: 'bar', content: glob('build/bar.css').map(format)}
+];
 
-fs.writeFileSync(jstFile, codeTemplate({templates: templates, styles: stylesAdd}));
 
-//fs.writeFileSync(jstFile, codeTemplate({templates: templatesBar, styles: stylesBar}));
+fs.writeFileSync(jstFile, codeTemplate({templates: html, styles: css}));
 
 mkdirp('dist/assets/');
 

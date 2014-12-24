@@ -3197,8 +3197,12 @@ System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 "use strict";
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 module.exports = {
-  'buttonAddComment': _.template('<div class="add-comment">Comment</div>'),
-  CSS: {'buttonAddComment': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}'}
+  'add': _.template('<div class="add-comment">Comment</div>'),
+  'bar': _.template('<div class="bar-comments">Comment</div>'),
+  CSS: {
+    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}',
+    'bar': '.bar-comments{background:red}'
+  }
 };
 
 
@@ -3233,8 +3237,8 @@ var $Testcore = Testcore;
     };
   },
   render: function() {
-    var style = Styler.getStyleFor('buttonAddComment');
-    this.$el.html(JST.buttonAddComment);
+    var style = Styler.getStyleFor('add');
+    this.$el.html(JST.add);
     this.$el.append(style);
     this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);

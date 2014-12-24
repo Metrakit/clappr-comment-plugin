@@ -39,8 +39,8 @@ class Testcore extends UiCorePlugin {
 
   render() {
 
-    var style = Styler.getStyleFor('buttonAddComment')
-    this.$el.html(JST.buttonAddComment)
+    var style = Styler.getStyleFor('add')
+    this.$el.html(JST.add)
     this.$el.append(style)
 
     this.$playButton = this.core.mediaControl.$el.find('.media-control-button')
