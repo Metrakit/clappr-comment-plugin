@@ -2,6 +2,7 @@ var UiCorePlugin = require('ui_core_plugin');
 var JST = require('./jst');
 var Styler = require('./styler');
 var Events = require('events');
+var _ = require('underscore');
 
 /*
 
@@ -13,10 +14,11 @@ Creer un autre plugin pour partager sur les resaux sociaux avec le temps actuel 
 class Testcore extends UiCorePlugin {
 
   get name() { return 'testcore'; }
-
   get events() {
     return {
-      'click .add-comment': 'click'
+      'click .add-comment': 'click',
+      'click .comments-bar': 'clickBar',
+      'click .form-comment': 'clickForm',
     }
   }
   get attributes() {
@@ -26,67 +28,124 @@ class Testcore extends UiCorePlugin {
     }
   }
 
+
   constructor(core) {
+
     super(core)
     this.core = core
-   // this.settingsUpdate()
-    this.render()
     this.percentTime = 0
     this.actualTime = 0
     this.percentHoverTime = 0
+
+    this.$el.formComment = document.createElement("div")
+    this.$el.bar = document.createElement("div")
+
+  }
+
+
+  bindEvents() {
+
+    this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make)
+    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
+    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
+    this.listenTo(this.core.mediaControl.container, 'container:play', this.play)
+
   }
 
 
   render() {
 
-    var style = Styler.getStyleFor('add')
-    this.$el.html(JST.add)
-    this.$el.append(style)
-
-    this.$playButton = this.core.mediaControl.$el.find('.media-control-button')
-
-    //this.core.mediaControl.$el.addClass('live')
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el)
-    /*if (this.$duration) {
-      this.$duration.remove()
-    }
-    this.$duration = $('<span data-duration></span>')
-    this.core.mediaControl.seekTime.$el.append(this.$duration)*/
-
-    return this;
   }
 
+
+  play() {
+
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).removeClass('show-form')
+    }
+
+  }
+
+
+  make() {
+
+
+    // Create new DOM element add a button
+    var styleAddBtn = Styler.getStyleFor('add');
+
+    this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
+
+    this.$el.html(JST.add)
+          .append(styleAddBtn)
+
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
+
+
+    // Create new DOM element for the second bar
+    var styleBar = Styler.getStyleFor('bar');
+
+    $(this.$el.bar).html(JST.bar)
+          .append(styleBar)
+          .addClass('comments-bar')
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar)
+
+
+    // Create new DOM element for add the form
+    var styleForm = Styler.getStyleFor('form');
+
+    $(this.$el.formComment).html(JST.form)
+          .addClass('form-comment')
+          .append(styleForm)
+    this.core.mediaControl.container.$el.append(this.$el.formComment)
+  
+
+    return this
+  }
+
+
+  clickForm() {
+    alert('lol')
+  }
 
 
   click() { 
-    this.core.mediaControl.container.pause()
-    this.$playButton.addClass('paused')
-    this.timeUpdate
-    console.log('click on button, temps actuel: ' + this.percentTime + '%')
-    console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')
+
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+
+      $(this.$el.formComment).removeClass('show-form')
+
+    } else {
+
+      this.core.mediaControl.container.pause()
+      this.$playButton.addClass('paused')
+      //this.timeUpdate
+      console.log('click on button, temps actuel: ' + this.percentTime + '%')
+      console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')
+
+      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
+      $(this.$el.formComment).addClass('show-form')
+
+    }
+
   }
 
-  
 
-  settingsUpdate() {
-      
+  clickBar() {
+
+    console.log('petit click sur la bar trankil')
+
   }
 
-  bindEvents() {
-    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
-    this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
-  } 
+
+  submitComment () {
+    $.post('/submit-comment', { comment: 'bob' }, function(response){
+      // process response
+    })
+  }
+
 
   hoverBar(event) {
-  	//console.log(event.pageX);
-  	//console.log(event.timeStamp);
-    //console.log(this.core); 
-    //this.timeUpdate();
-    // A TESt :
-    //console.log(this.core.mediaControl.container); 
 
-    //console.log(this.core.mediaControl.$seekBarContainer[0].scrollWidth);
-    this.render()  // a delete
     var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
     var currentWidth = event.pageX;
 
@@ -96,15 +155,19 @@ class Testcore extends UiCorePlugin {
 
     $('.bob').text(Math.round(this.percentHoverTime) + '%');
 
-    //console.log(this.$playWrapper);
-
   }
+
 
   timeUpdate(position, duration) {
     this.actualTime = position;
     this.percentTime = ((position / duration) * 100);
     $('.bob2').text(Math.round(this.percentTime) + '%');
+
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
+    }
   }
+
 
 }
 

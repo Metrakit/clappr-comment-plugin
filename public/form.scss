@@ -1,0 +1,34 @@
+.form-comment {
+	position: absolute;
+	width: 50%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: left;
+	background: white;
+	right:5px;
+	bottom: 100px;
+	z-index: 999999;
+	padding: 5px !important;
+	visibility: hidden;
+	opacity: 0;
+	transition: hidden 0s 0.2s, opacity 0.2s linear;
+
+	border-radius: 5px;
+
+	// peut etre pas necessaire
+	cursor: default;
+
+	textarea {
+		width: 100%;
+	}
+
+	.submit-comment {
+		text-align:center;
+	}
+
+}
+
+.show-form {
+	visibility: visible;
+	opacity: .9;
+}

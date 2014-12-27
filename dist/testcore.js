@@ -3198,10 +3198,12 @@ System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 module.exports = {
   'add': _.template('<div class="add-comment">Comment</div>'),
-  'bar': _.template('<div class="bar-comments">Comment</div>'),
+  'bar': _.template('dfdfdfd<script>console.log("yeah")</script>'),
+  'form': _.template('<form>	<textarea placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
   CSS: {
-    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}body{background:lightgrey}',
-    'bar': '.bar-comments{background:red}'
+    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}',
+    'bar': '.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}body{background:lightgrey}',
+    'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
   }
 };
 
@@ -3209,18 +3211,21 @@ module.exports = {
 //# sourceURL=C:/wamp/www/clappr-test-plugin/src/jst.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],7:[function(require,module,exports){
+(function (global){
 "use strict";
 var UiCorePlugin = require('ui_core_plugin');
 var JST = require('./jst');
 var Styler = require('./styler');
 var Events = require('events');
+var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 var Testcore = function Testcore(core) {
   $traceurRuntime.superConstructor($Testcore).call(this, core);
   this.core = core;
-  this.render();
   this.percentTime = 0;
   this.actualTime = 0;
   this.percentHoverTime = 0;
+  this.$el.formComment = document.createElement("div");
+  this.$el.bar = document.createElement("div");
 };
 var $Testcore = Testcore;
 ($traceurRuntime.createClass)(Testcore, {
@@ -3228,7 +3233,11 @@ var $Testcore = Testcore;
     return 'testcore';
   },
   get events() {
-    return {'click .add-comment': 'click'};
+    return {
+      'click .add-comment': 'click',
+      'click .comments-bar': 'clickBar',
+      'click .form-comment': 'clickForm'
+    };
   },
   get attributes() {
     return {
@@ -3236,28 +3245,53 @@ var $Testcore = Testcore;
       'data-comments-controls': ''
     };
   },
-  render: function() {
-    var style = Styler.getStyleFor('add');
-    this.$el.html(JST.add);
-    this.$el.append(style);
-    this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
-    return this;
-  },
-  click: function() {
-    this.core.mediaControl.container.pause();
-    this.$playButton.addClass('paused');
-    this.timeUpdate;
-    console.log('click on button, temps actuel: ' + this.percentTime + '%');
-    console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes');
-  },
-  settingsUpdate: function() {},
   bindEvents: function() {
+    this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make);
     this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar);
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
+    this.listenTo(this.core.mediaControl.container, 'container:play', this.play);
+  },
+  render: function() {},
+  play: function() {
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).removeClass('show-form');
+    }
+  },
+  make: function() {
+    var styleAddBtn = Styler.getStyleFor('add');
+    this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
+    this.$el.html(JST.add).append(styleAddBtn);
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
+    var styleBar = Styler.getStyleFor('bar');
+    $(this.$el.bar).html(JST.bar).append(styleBar).addClass('comments-bar');
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar);
+    var styleForm = Styler.getStyleFor('form');
+    $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm);
+    this.core.mediaControl.container.$el.append(this.$el.formComment);
+    return this;
+  },
+  clickForm: function() {
+    alert('lol');
+  },
+  click: function() {
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).removeClass('show-form');
+    } else {
+      this.core.mediaControl.container.pause();
+      this.$playButton.addClass('paused');
+      console.log('click on button, temps actuel: ' + this.percentTime + '%');
+      console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes');
+      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
+      $(this.$el.formComment).addClass('show-form');
+    }
+  },
+  clickBar: function() {
+    console.log('petit click sur la bar trankil');
+  },
+  submitComment: function() {
+    $.post('/submit-comment', {comment: 'bob'}, function(response) {});
   },
   hoverBar: function(event) {
-    this.render();
     var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
     var currentWidth = event.pageX;
     var diff = width - currentWidth;
@@ -3268,12 +3302,16 @@ var $Testcore = Testcore;
     this.actualTime = position;
     this.percentTime = ((position / duration) * 100);
     $('.bob2').text(Math.round(this.percentTime) + '%');
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
+    }
   }
 }, {}, UiCorePlugin);
 module.exports = window.Testcore = Testcore;
 
 
 //# sourceURL=C:/wamp/www/clappr-test-plugin/src/main.js
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./jst":6,"./styler":8,"events":2,"ui_core_plugin":"ui_core_plugin"}],8:[function(require,module,exports){
 (function (global){
 "use strict";

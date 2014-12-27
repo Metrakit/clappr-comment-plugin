@@ -29,11 +29,13 @@ function copyFiles(asset) {
 var html = [
   {name: 'add', content: glob('build/add.html').map(format)},
   {name: 'bar', content: glob('build/bar.html').map(format)},
+  {name: 'form', content: glob('build/form.html').map(format)},
 ];
 
 var css = [
   {name: 'add', content: glob('build/add.css').map(format)},
-  {name: 'bar', content: glob('build/bar.css').map(format)}
+  {name: 'bar', content: glob('build/bar.css').map(format)},
+  {name: 'form', content: glob('build/form.css').map(format)},
 ];
 
 
