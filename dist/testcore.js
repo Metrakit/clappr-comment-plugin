@@ -3258,6 +3258,7 @@ var $Testcore = Testcore;
     }
   },
   make: function() {
+    var $__0 = this;
     var styleAddBtn = Styler.getStyleFor('add');
     this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
     this.$el.html(JST.add).append(styleAddBtn);
@@ -3265,13 +3266,22 @@ var $Testcore = Testcore;
     var styleBar = Styler.getStyleFor('bar');
     $(this.$el.bar).html(JST.bar).append(styleBar).addClass('comments-bar');
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar);
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').find('.comments-bar').click((function() {
+      return $__0.clickTest($__0);
+    }));
     var styleForm = Styler.getStyleFor('form');
     $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm);
     this.core.mediaControl.container.$el.append(this.$el.formComment);
+    this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
+      e.stopPropagation();
+    });
+    this.core.mediaControl.container.$el.find('.submit-comment').click((function() {
+      return $__0.submitComment($__0);
+    }));
     return this;
   },
-  clickForm: function() {
-    alert('lol');
+  submitComment: function(elem) {
+    $.post('/submit-comment', {comment: 'bob'}, function(response) {});
   },
   click: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
@@ -3285,11 +3295,20 @@ var $Testcore = Testcore;
       $(this.$el.formComment).addClass('show-form');
     }
   },
+  clickTest: function(elem) {
+    if ($(elem.$el.formComment).css('visibility') == "visible") {
+      $(elem.$el.formComment).removeClass('show-form');
+    } else {
+      elem.core.mediaControl.container.pause();
+      elem.$playButton.addClass('paused');
+      console.log('click on button, temps actuel: ' + elem.percentTime + '%');
+      console.log('Poster un commentaire a ' + Math.round(elem.actualTime) + ' secondes');
+      $(elem.$el.formComment).find('.comment-time').text(Math.round(elem.actualTime) / 100);
+      $(elem.$el.formComment).addClass('show-form');
+    }
+  },
   clickBar: function() {
     console.log('petit click sur la bar trankil');
-  },
-  submitComment: function() {
-    $.post('/submit-comment', {comment: 'bob'}, function(response) {});
   },
   hoverBar: function(event) {
     var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;

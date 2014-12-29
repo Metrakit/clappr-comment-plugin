@@ -89,6 +89,9 @@ class Testcore extends UiCorePlugin {
           .addClass('comments-bar')
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar)
 
+    this.core.mediaControl.$('.media-control-right-panel[data-media-control]')
+    .find('.comments-bar').click(() => this.clickTest(this)) 
+
 
     // Create new DOM element for add the form
     var styleForm = Styler.getStyleFor('form');
@@ -97,16 +100,26 @@ class Testcore extends UiCorePlugin {
           .addClass('form-comment')
           .append(styleForm)
     this.core.mediaControl.container.$el.append(this.$el.formComment)
+
+
+    this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
+      e.stopPropagation();
+    });
+
+
+    this.core.mediaControl.container.$el.find('.submit-comment').click(() => this.submitComment(this));
+  
   
 
-    return this
+    return this;
   }
 
 
-  clickForm() {
-    alert('lol')
+  submitComment(elem) {
+    $.post('/submit-comment', { comment: 'bob' }, function(response){
+      // process response
+    })
   }
-
 
   click() { 
 
@@ -130,19 +143,32 @@ class Testcore extends UiCorePlugin {
   }
 
 
+  clickTest(elem) { 
+
+    if ($(elem.$el.formComment).css('visibility') == "visible") {
+
+      $(elem.$el.formComment).removeClass('show-form')
+
+    } else {
+
+      elem.core.mediaControl.container.pause()
+      elem.$playButton.addClass('paused')
+      //this.timeUpdate
+      console.log('click on button, temps actuel: ' + elem.percentTime + '%')
+      console.log('Poster un commentaire a ' + Math.round(elem.actualTime) + ' secondes')
+
+      $(elem.$el.formComment).find('.comment-time').text(Math.round(elem.actualTime)/100)
+      $(elem.$el.formComment).addClass('show-form')
+
+    }
+
+  }
+
   clickBar() {
 
     console.log('petit click sur la bar trankil')
 
   }
-
-
-  submitComment () {
-    $.post('/submit-comment', { comment: 'bob' }, function(response){
-      // process response
-    })
-  }
-
 
   hoverBar(event) {
 
