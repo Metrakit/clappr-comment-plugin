@@ -17,8 +17,6 @@ class Testcore extends UiCorePlugin {
   get events() {
     return {
       'click .add-comment': 'click',
-      'click .comments-bar': 'clickBar',
-      'click .form-comment': 'clickForm',
     }
   }
   get attributes() {
@@ -36,10 +34,7 @@ class Testcore extends UiCorePlugin {
     this.percentTime = 0
     this.actualTime = 0
     this.percentHoverTime = 0
-
-    this.$el.formComment = document.createElement("div")
-    this.$el.bar = document.createElement("div")
-
+    this.commentPointer = '<span class="comment-pointer">o</span>';
   }
 
 
@@ -54,7 +49,7 @@ class Testcore extends UiCorePlugin {
 
 
   render() {
-
+    this.make()
   }
 
 
@@ -69,7 +64,6 @@ class Testcore extends UiCorePlugin {
 
   make() {
 
-
     // Create new DOM element add a button
     var styleAddBtn = Styler.getStyleFor('add');
 
@@ -83,6 +77,7 @@ class Testcore extends UiCorePlugin {
 
     // Create new DOM element for the second bar
     var styleBar = Styler.getStyleFor('bar');
+    this.$el.bar = document.createElement("div")
 
     $(this.$el.bar).html(JST.bar)
           .append(styleBar)
@@ -95,12 +90,11 @@ class Testcore extends UiCorePlugin {
 
     // Create new DOM element for add the form
     var styleForm = Styler.getStyleFor('form');
-
+    this.$el.formComment = document.createElement("div")
     $(this.$el.formComment).html(JST.form)
           .addClass('form-comment')
           .append(styleForm)
     this.core.mediaControl.container.$el.append(this.$el.formComment)
-
 
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
@@ -109,22 +103,41 @@ class Testcore extends UiCorePlugin {
 
     this.core.mediaControl.container.$el.find('.submit-comment').click(() => this.submitComment(this));
   
-  
+    this.core.mediaControl.$seekBarContainer.append(this.commentPointer)
+
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', this.showComment(this));
 
     return this;
   }
 
 
+  showComment(elem) {
+    
+  }
+
   submitComment(elem) {
-    $.post('/submit-comment', { comment: 'bob' }, function(response){
+    var form = elem.core.mediaControl.container.$el.find('form')
+    var inputs = $(form).serializeArray()
+    console.log(inputs)
+   /* $.post('http://minetop.com/submit-comment', { inputs }, function(response){
       // process response
+    })*/
+
+    $.ajax({
+      url: 'http://minetop.com/submit-comment',
+      type: 'POST',
+      data: inputs,
+      dataType: 'json',
+      success: function(data){
+        var time = 30;
+      }
     })
   }
 
   click() { 
 
     if ($(this.$el.formComment).css('visibility') == "visible") {
-
+      console.log($(this.$el.formComment))
       $(this.$el.formComment).removeClass('show-form')
 
     } else {

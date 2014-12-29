@@ -5,7 +5,19 @@
   font-size: 10px;
   font-weight: bold;
   margin-left: 6px;
+}
 
+.comment-pointer {
+	position: absolute;
+	left: 20px;
+	top: -5px;
+
+	color: lightgreen;
+	transition: color 0.2s linear;
+
+	&:hover {
+		color: red;
+	}
 }
 
 body {

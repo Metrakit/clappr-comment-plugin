@@ -3199,10 +3199,10 @@ var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined
 module.exports = {
   'add': _.template('<div class="add-comment">Comment</div>'),
   'bar': _.template('dfdfdfd<script>console.log("yeah")</script>'),
-  'form': _.template('<form>	<textarea placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
+  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
   CSS: {
     'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}',
-    'bar': '.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}body{background:lightgrey}',
+    'bar': '.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:-5px;color:#90ee90;transition:color .2s linear}.comment-pointer:hover{color:red}body{background:lightgrey}',
     'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
   }
 };
@@ -3224,8 +3224,7 @@ var Testcore = function Testcore(core) {
   this.percentTime = 0;
   this.actualTime = 0;
   this.percentHoverTime = 0;
-  this.$el.formComment = document.createElement("div");
-  this.$el.bar = document.createElement("div");
+  this.commentPointer = '<span class="comment-pointer">o</span>';
 };
 var $Testcore = Testcore;
 ($traceurRuntime.createClass)(Testcore, {
@@ -3233,11 +3232,7 @@ var $Testcore = Testcore;
     return 'testcore';
   },
   get events() {
-    return {
-      'click .add-comment': 'click',
-      'click .comments-bar': 'clickBar',
-      'click .form-comment': 'clickForm'
-    };
+    return {'click .add-comment': 'click'};
   },
   get attributes() {
     return {
@@ -3251,7 +3246,9 @@ var $Testcore = Testcore;
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
     this.listenTo(this.core.mediaControl.container, 'container:play', this.play);
   },
-  render: function() {},
+  render: function() {
+    this.make();
+  },
   play: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).removeClass('show-form');
@@ -3264,12 +3261,14 @@ var $Testcore = Testcore;
     this.$el.html(JST.add).append(styleAddBtn);
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
     var styleBar = Styler.getStyleFor('bar');
+    this.$el.bar = document.createElement("div");
     $(this.$el.bar).html(JST.bar).append(styleBar).addClass('comments-bar');
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar);
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').find('.comments-bar').click((function() {
       return $__0.clickTest($__0);
     }));
     var styleForm = Styler.getStyleFor('form');
+    this.$el.formComment = document.createElement("div");
     $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm);
     this.core.mediaControl.container.$el.append(this.$el.formComment);
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
@@ -3278,13 +3277,28 @@ var $Testcore = Testcore;
     this.core.mediaControl.container.$el.find('.submit-comment').click((function() {
       return $__0.submitComment($__0);
     }));
+    this.core.mediaControl.$seekBarContainer.append(this.commentPointer);
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', this.showComment(this));
     return this;
   },
+  showComment: function(elem) {},
   submitComment: function(elem) {
-    $.post('/submit-comment', {comment: 'bob'}, function(response) {});
+    var form = elem.core.mediaControl.container.$el.find('form');
+    var inputs = $(form).serializeArray();
+    console.log(inputs);
+    $.ajax({
+      url: 'http://minetop.com/submit-comment',
+      type: 'POST',
+      data: inputs,
+      dataType: 'json',
+      success: function(data) {
+        var time = 30;
+      }
+    });
   },
   click: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
+      console.log($(this.$el.formComment));
       $(this.$el.formComment).removeClass('show-form');
     } else {
       this.core.mediaControl.container.pause();
