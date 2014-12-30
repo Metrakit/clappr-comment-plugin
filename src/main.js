@@ -30,9 +30,9 @@ class Testcore extends UiCorePlugin {
   constructor(core) {
     super(core)
     this.core = core
-    this.percentTime = 0
+    //this.percentTime = 0
     this.actualTime = 0
-    this.percentHoverTime = 0
+    //this.percentHoverTime = 0
   }
 
 
@@ -45,6 +45,7 @@ class Testcore extends UiCorePlugin {
 
 
   render() {
+    this.videoId = this.core.$el.parent().attr('data-video-id')
     this.make()
   }
 
@@ -60,7 +61,6 @@ class Testcore extends UiCorePlugin {
     }
   }
 
-
   make() {
       // Create new DOM element add a button
     var styleAddBtn = Styler.getStyleFor('add');
@@ -71,20 +71,6 @@ class Testcore extends UiCorePlugin {
           .append(styleAddBtn)
 
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
-
-
-    // Create new DOM element for the second bar
-    /*var styleBar = Styler.getStyleFor('bar');
-    this.$el.bar = document.createElement("div")
-
-    $(this.$el.bar).html(JST.bar)
-          .append(styleBar)
-          .addClass('comments-bar')
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar)
-
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]')
-    .find('.comments-bar').click(() => this.clickTest(this)) */
-
 
     // Create new DOM element for add the form
     var styleForm = Styler.getStyleFor('form');
@@ -98,53 +84,57 @@ class Testcore extends UiCorePlugin {
       e.stopPropagation();
     });
 
-    this.getComments(1)
+    this.getComments(this.core.options.videoId)
 
     this.core.mediaControl.container.$el.find('.submit-comment').click(() => this.submitComment(this));
   
     this.core.mediaControl.$seekBarContainer.append(this.commentPointer)
 
-    //this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', () => this.showComment(this));
-
     this.core.mediaControl.seekTime.$el.prepend('<div class="video-comment"></div>')
 
-    return this;
+   
   }
 
-  getComments(videoId) {  
+  getComments(videoId) { 
+
     if (!this.pointers) {
       this.pointers = new Array;
       $.get('http://minetop.com/comments-video/' + videoId, (function(data) {
+
         for(var i = 0; i < data.length; i++) {
             this.createCommentPointer(data[i])
         }
         //this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', () => this.showComment(this));
-      var elem = this;
-      this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
-        elem.showComment(elem, this)
-      }));
-      this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', () => this.hideComment(this));
-
+        this.displayingComment(this)
       }).bind(this))
-
 
     }
   }
 
+  displayingComment(elem) {
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
+      elem.showComment(elem, this)
+    }));
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', () => this.hideComment(this));
+  }
+
   createCommentPointer(data) {
-    this.pointers[data.percent] = document.createElement("span")
-    $(this.pointers[data.percent]).addClass("comment-pointer")
-        .attr('data-percent-comment', data.percent)
+    console.log(data)
+    this.pointers[data.time] = document.createElement("span")
+    $(this.pointers[data.time]).addClass("comment-pointer")
         .attr('data-comment', data.comment)
         .attr('data-img-url')
-    $(this.pointers[data.percent]).css('left', data.percent + '%');
+    this.timePercent = (data.time / this.core.mediaControl.container.getDuration()) * 100
 
-    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.percent])
+    $(this.pointers[data.time]).css('left', this.timePercent + '%');
+
+    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time])
   }
 
 
   showComment(elem, pointer) {
-    elem.core.mediaControl.seekTime.$('.video-comment').html($(pointer).attr('data-comment'))
+    elem.core.mediaControl.seekTime.$('.video-comment')
+      .html($(pointer).attr('data-comment'))
       .addClass('comment-actif')
   }
 
@@ -156,10 +146,12 @@ class Testcore extends UiCorePlugin {
   submitComment(elem) {
     var form = elem.core.mediaControl.container.$el.find('form')
     var inputs = $(form).serializeArray()
+    console.log(Math.round(elem.actualTime))
+    inputs.push({
+        name: "time",
+        value: Math.round(elem.actualTime)
+    });    
     console.log(inputs)
-   /* $.post('http://minetop.com/submit-comment', { inputs }, function(response){
-      // process response
-    })*/
 
     $.ajax({
       url: 'http://minetop.com/submit-comment',
@@ -167,7 +159,10 @@ class Testcore extends UiCorePlugin {
       data: inputs,
       dataType: 'json',
       success: function(data){
-        var time = 30;
+        elem.createCommentPointer(data)
+        elem.displayingComment(elem)
+
+        elem.dismissForm()
       }
     })
   }
@@ -182,8 +177,8 @@ class Testcore extends UiCorePlugin {
       this.core.mediaControl.container.pause()
       this.$playButton.addClass('paused')
       //this.timeUpdate
-      console.log('click on button, temps actuel: ' + this.percentTime + '%')
-      console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')
+      //console.log('click on button, temps actuel: ' + this.percentTime + '%')
+      //console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')
 
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
       $(this.$el.formComment).addClass('show-form')
@@ -192,8 +187,20 @@ class Testcore extends UiCorePlugin {
 
   }
 
-  hoverBar(event) {
+  timeUpdate(position, duration) {
+    this.actualTime = position;
+    /*this.percentTime = ((position / duration) * 100);
+    $('.bob2').text(Math.round(this.percentTime) + '%');*/
 
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
+    }
+  }
+  
+  /*hoverBar(event) {
+
+    // BETTER :
+    //this.core.mediaControl.container.getDuration()
     var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
     var currentWidth = event.pageX;
 
@@ -203,18 +210,7 @@ class Testcore extends UiCorePlugin {
 
     $('.bob').text(Math.round(this.percentHoverTime) + '%');
 
-  }
-
-  timeUpdate(position, duration) {
-    this.actualTime = position;
-    this.percentTime = ((position / duration) * 100);
-    $('.bob2').text(Math.round(this.percentTime) + '%');
-
-    if ($(this.$el.formComment).css('visibility') == "visible") {
-      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
-    }
-  }
-
+  }*/
 
 }
 

@@ -18,20 +18,13 @@
     width: 800,
     plugins: {
       core: [Testcore]
-    }
+    },
+    videoId: 1
   });
 
-  /*var player2 = new Clappr.Player({
-    sources: ['http://clappr.com/devstories.mp4'],
-    width: 400,
-    plugins: {
-      core: [Testcore]
-    }
-  });*/
 
   player.attachTo(document.getElementById('player-wrapper'));
 
-  //player2.attachTo(document.getElementById('player2-wrapper'));
 }
   </script>
 </head>
@@ -39,7 +32,6 @@
   <div id="player-wrapper"></div>
   <p class="bob">0%</p>
   <h3 class="bob2">0%</h3>
-  <!--<div id="player2-wrapper"></div>-->
 </body>
 </html>
 

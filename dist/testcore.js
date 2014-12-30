@@ -3219,9 +3219,7 @@ var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined
 var Testcore = function Testcore(core) {
   $traceurRuntime.superConstructor($Testcore).call(this, core);
   this.core = core;
-  this.percentTime = 0;
   this.actualTime = 0;
-  this.percentHoverTime = 0;
 };
 var $Testcore = Testcore;
 ($traceurRuntime.createClass)(Testcore, {
@@ -3244,6 +3242,7 @@ var $Testcore = Testcore;
     this.listenTo(this.core.mediaControl.container, 'container:play', this.play);
   },
   render: function() {
+    this.videoId = this.core.$el.parent().attr('data-video-id');
     this.make();
   },
   play: function() {
@@ -3267,37 +3266,40 @@ var $Testcore = Testcore;
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
-    this.getComments(1);
+    this.getComments(this.core.options.videoId);
     this.core.mediaControl.container.$el.find('.submit-comment').click((function() {
       return $__0.submitComment($__0);
     }));
     this.core.mediaControl.$seekBarContainer.append(this.commentPointer);
     this.core.mediaControl.seekTime.$el.prepend('<div class="video-comment"></div>');
-    return this;
   },
   getComments: function(videoId) {
     if (!this.pointers) {
       this.pointers = new Array;
       $.get('http://minetop.com/comments-video/' + videoId, (function(data) {
-        var $__0 = this;
         for (var i = 0; i < data.length; i++) {
           this.createCommentPointer(data[i]);
         }
-        var elem = this;
-        this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
-          elem.showComment(elem, this);
-        }));
-        this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', (function() {
-          return $__0.hideComment($__0);
-        }));
+        this.displayingComment(this);
       }).bind(this));
     }
   },
+  displayingComment: function(elem) {
+    var $__0 = this;
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
+      elem.showComment(elem, this);
+    }));
+    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', (function() {
+      return $__0.hideComment($__0);
+    }));
+  },
   createCommentPointer: function(data) {
-    this.pointers[data.percent] = document.createElement("span");
-    $(this.pointers[data.percent]).addClass("comment-pointer").attr('data-percent-comment', data.percent).attr('data-comment', data.comment).attr('data-img-url');
-    $(this.pointers[data.percent]).css('left', data.percent + '%');
-    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.percent]);
+    console.log(data);
+    this.pointers[data.time] = document.createElement("span");
+    $(this.pointers[data.time]).addClass("comment-pointer").attr('data-comment', data.comment).attr('data-img-url');
+    this.timePercent = (data.time / this.core.mediaControl.container.getDuration()) * 100;
+    $(this.pointers[data.time]).css('left', this.timePercent + '%');
+    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time]);
   },
   showComment: function(elem, pointer) {
     elem.core.mediaControl.seekTime.$('.video-comment').html($(pointer).attr('data-comment')).addClass('comment-actif');
@@ -3308,6 +3310,11 @@ var $Testcore = Testcore;
   submitComment: function(elem) {
     var form = elem.core.mediaControl.container.$el.find('form');
     var inputs = $(form).serializeArray();
+    console.log(Math.round(elem.actualTime));
+    inputs.push({
+      name: "time",
+      value: Math.round(elem.actualTime)
+    });
     console.log(inputs);
     $.ajax({
       url: 'http://minetop.com/submit-comment',
@@ -3315,7 +3322,9 @@ var $Testcore = Testcore;
       data: inputs,
       dataType: 'json',
       success: function(data) {
-        var time = 30;
+        elem.createCommentPointer(data);
+        elem.displayingComment(elem);
+        elem.dismissForm();
       }
     });
   },
@@ -3326,23 +3335,12 @@ var $Testcore = Testcore;
     } else {
       this.core.mediaControl.container.pause();
       this.$playButton.addClass('paused');
-      console.log('click on button, temps actuel: ' + this.percentTime + '%');
-      console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes');
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
       $(this.$el.formComment).addClass('show-form');
     }
   },
-  hoverBar: function(event) {
-    var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
-    var currentWidth = event.pageX;
-    var diff = width - currentWidth;
-    this.percentHoverTime = 100 - ((diff / width) * 100);
-    $('.bob').text(Math.round(this.percentHoverTime) + '%');
-  },
   timeUpdate: function(position, duration) {
     this.actualTime = position;
-    this.percentTime = ((position / duration) * 100);
-    $('.bob2').text(Math.round(this.percentTime) + '%');
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
     }
