@@ -3198,11 +3198,9 @@ System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 module.exports = {
   'add': _.template('<div class="add-comment">Comment</div>'),
-  'bar': _.template('dfdfdfd<script>console.log("yeah")</script>'),
   'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
   CSS: {
-    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.media-control[data-media-control] .media-control-layer[data-controls] button.media-control-button{background-color:red!important}',
-    'bar': '.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:-5px;color:#90ee90;transition:color .2s linear}.comment-pointer:hover{color:red}body{background:lightgrey}',
+    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
     'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
   }
 };
@@ -3224,7 +3222,6 @@ var Testcore = function Testcore(core) {
   this.percentTime = 0;
   this.actualTime = 0;
   this.percentHoverTime = 0;
-  this.commentPointer = '<span class="comment-pointer">o</span>';
 };
 var $Testcore = Testcore;
 ($traceurRuntime.createClass)(Testcore, {
@@ -3250,6 +3247,9 @@ var $Testcore = Testcore;
     this.make();
   },
   play: function() {
+    this.dismissForm();
+  },
+  dismissForm: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).removeClass('show-form');
     }
@@ -3260,13 +3260,6 @@ var $Testcore = Testcore;
     this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
     this.$el.html(JST.add).append(styleAddBtn);
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
-    var styleBar = Styler.getStyleFor('bar');
-    this.$el.bar = document.createElement("div");
-    $(this.$el.bar).html(JST.bar).append(styleBar).addClass('comments-bar');
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el.bar);
-    this.core.mediaControl.$('.media-control-right-panel[data-media-control]').find('.comments-bar').click((function() {
-      return $__0.clickTest($__0);
-    }));
     var styleForm = Styler.getStyleFor('form');
     this.$el.formComment = document.createElement("div");
     $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm);
@@ -3274,14 +3267,44 @@ var $Testcore = Testcore;
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
+    this.getComments(1);
     this.core.mediaControl.container.$el.find('.submit-comment').click((function() {
       return $__0.submitComment($__0);
     }));
     this.core.mediaControl.$seekBarContainer.append(this.commentPointer);
-    this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', this.showComment(this));
+    this.core.mediaControl.seekTime.$el.prepend('<div class="video-comment"></div>');
     return this;
   },
-  showComment: function(elem) {},
+  getComments: function(videoId) {
+    if (!this.pointers) {
+      this.pointers = new Array;
+      $.get('http://minetop.com/comments-video/' + videoId, (function(data) {
+        var $__0 = this;
+        for (var i = 0; i < data.length; i++) {
+          this.createCommentPointer(data[i]);
+        }
+        var elem = this;
+        this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
+          elem.showComment(elem, this);
+        }));
+        this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', (function() {
+          return $__0.hideComment($__0);
+        }));
+      }).bind(this));
+    }
+  },
+  createCommentPointer: function(data) {
+    this.pointers[data.percent] = document.createElement("span");
+    $(this.pointers[data.percent]).addClass("comment-pointer").attr('data-percent-comment', data.percent).attr('data-comment', data.comment).attr('data-img-url');
+    $(this.pointers[data.percent]).css('left', data.percent + '%');
+    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.percent]);
+  },
+  showComment: function(elem, pointer) {
+    elem.core.mediaControl.seekTime.$('.video-comment').html($(pointer).attr('data-comment')).addClass('comment-actif');
+  },
+  hideComment: function(elem) {
+    elem.core.mediaControl.seekTime.$('.video-comment').html('').removeClass('comment-actif');
+  },
   submitComment: function(elem) {
     var form = elem.core.mediaControl.container.$el.find('form');
     var inputs = $(form).serializeArray();
@@ -3308,21 +3331,6 @@ var $Testcore = Testcore;
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
       $(this.$el.formComment).addClass('show-form');
     }
-  },
-  clickTest: function(elem) {
-    if ($(elem.$el.formComment).css('visibility') == "visible") {
-      $(elem.$el.formComment).removeClass('show-form');
-    } else {
-      elem.core.mediaControl.container.pause();
-      elem.$playButton.addClass('paused');
-      console.log('click on button, temps actuel: ' + elem.percentTime + '%');
-      console.log('Poster un commentaire a ' + Math.round(elem.actualTime) + ' secondes');
-      $(elem.$el.formComment).find('.comment-time').text(Math.round(elem.actualTime) / 100);
-      $(elem.$el.formComment).addClass('show-form');
-    }
-  },
-  clickBar: function() {
-    console.log('petit click sur la bar trankil');
   },
   hoverBar: function(event) {
     var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
