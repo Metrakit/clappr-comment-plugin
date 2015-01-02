@@ -32,19 +32,20 @@ class Testcore extends UiCorePlugin {
     this.core = core
     //this.percentTime = 0
     this.actualTime = 0
-    //this.percentHoverTime = 0
+    //this.percentHoverTime = 0    
   }
 
 
   bindEvents() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make)
-    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
+    //this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
     this.listenTo(this.core.mediaControl.container, 'container:play', this.play)
   }
 
 
   render() {
+    this.core.options.commentImg = this.core.options.commentImg != undefined ? this.core.options.commentImg : true;
     this.videoId = this.core.$el.parent().attr('data-video-id')
     this.make()
   }
@@ -84,7 +85,11 @@ class Testcore extends UiCorePlugin {
       e.stopPropagation();
     });
 
-    this.getComments(this.core.options.videoId)
+    if (!isNaN(this.core.mediaControl.container.getDuration())) {
+      this.getComments(this.core.options.videoId)
+    } else {
+      this.videoUnReady = true
+    }
 
     this.core.mediaControl.container.$el.find('.submit-comment').click(() => this.submitComment(this));
   
@@ -92,7 +97,6 @@ class Testcore extends UiCorePlugin {
 
     this.core.mediaControl.seekTime.$el.prepend('<div class="video-comment"></div>')
 
-   
   }
 
   getComments(videoId) { 
@@ -119,23 +123,46 @@ class Testcore extends UiCorePlugin {
   }
 
   createCommentPointer(data) {
-    console.log(data)
+    //console.log(data)
     this.pointers[data.time] = document.createElement("span")
     $(this.pointers[data.time]).addClass("comment-pointer")
         .attr('data-comment', data.comment)
-        .attr('data-img-url')
+
+    if(data.imgUrl) {
+      $(this.pointers[data.time]).attr('data-imgUrl', data.imgUrl)
+      //console.log('img url')
+    }
+        //this.timeUpdate
     this.timePercent = (data.time / this.core.mediaControl.container.getDuration()) * 100
-
     $(this.pointers[data.time]).css('left', this.timePercent + '%');
-
-    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time])
+    //console.log(this.timePercent)
+    if (!isNaN(this.timePercent)) {
+      this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time])
+    }
+    
   }
-
 
   showComment(elem, pointer) {
     elem.core.mediaControl.seekTime.$('.video-comment')
       .html($(pointer).attr('data-comment'))
       .addClass('comment-actif')
+      //console.log(this.core.options.videoId)
+      if (this.core.options.videoId && $(pointer).attr('data-imgUrl')) {
+        elem.core.mediaControl.seekTime.$('.video-comment').prepend('<div class="img-comment"><div class="spinner-three-bounce" data-spinner><div data-bounce1></div><div data-bounce2></div><div data-bounce3></div></div></div>')
+
+        $("<img />").attr('src', 'http://www.mattlunn.me.uk/blog/wp-content/uploads/2014/01/cropped-cropped-02124_tuscansunsetmondaymay25th2009_1440x900.jpg')
+        .load(function() {
+            if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {
+                // wrong image
+            } else {
+                elem.core.mediaControl.seekTime.$('.img-comment').html(this)
+               this.animate({
+                  opacity: 0.25
+                }, 500, 'ease-out', function(){return false;})
+            }
+        });
+    
+      }
   }
 
   hideComment(elem) {
@@ -144,45 +171,48 @@ class Testcore extends UiCorePlugin {
   }
 
   submitComment(elem) {
-    var form = elem.core.mediaControl.container.$el.find('form')
-    var inputs = $(form).serializeArray()
-    console.log(Math.round(elem.actualTime))
-    inputs.push({
-        name: "time",
-        value: Math.round(elem.actualTime)
-    });    
-    console.log(inputs)
+
+    var form = elem.core.mediaControl.container.$el.find('form') 
+    var fd = new FormData();
+    //var file_data = $('input[type="file"]')[0].files; // for multiple files
+   /* for(var i = 0;i<file_data.length;i++){
+        fd.append("file_"+i, file_data[i]);
+    }*/
+    var inputs = $(form).serializeArray();
+    $.each(inputs, function(key, input) {
+        fd.append(input.name,input.value);
+    })
+    fd.append('time', Math.round(elem.actualTime));
+
 
     $.ajax({
       url: 'http://minetop.com/submit-comment',
       type: 'POST',
-      data: inputs,
-      dataType: 'json',
+      data: fd,
+      async: false,
       success: function(data){
         elem.createCommentPointer(data)
         elem.displayingComment(elem)
-
         elem.dismissForm()
-      }
+      },
+      cache: false,
+      contentType: false,
+      processData: false
     })
   }
 
   click() { 
 
     if ($(this.$el.formComment).css('visibility') == "visible") {
-      console.log($(this.$el.formComment))
       $(this.$el.formComment).removeClass('show-form')
     } else {
-
       this.core.mediaControl.container.pause()
       this.$playButton.addClass('paused')
-      //this.timeUpdate
-      //console.log('click on button, temps actuel: ' + this.percentTime + '%')
-      //console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')
-
-      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
+      var actualTime = Math.round(this.actualTime)/100
+      $(this.$el.formComment).find('.comment-time').text(actualTime)
       $(this.$el.formComment).addClass('show-form')
-
+      //console.log('click on button, temps actuel: ' + this.percentTime + '%')
+      //console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')s
     }
 
   }
@@ -195,8 +225,13 @@ class Testcore extends UiCorePlugin {
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
     }
+
+    if (this.videoUnReady && this.videoUnReady == true) {
+      this.getComments(this.core.options.videoId)
+      this.videoUnReady == false
+    }
   }
-  
+
   /*hoverBar(event) {
 
     // BETTER :

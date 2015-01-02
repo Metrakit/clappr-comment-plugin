@@ -78,6 +78,23 @@ $circle-radius: 3.5px;
   padding: 5px !important;
 }
 
+.img-comment {
+  img {
+    max-width: 400px;
+    max-height: 200px; 
+  }
+  min-width: 100px;
+  min-height: 50px;
+  .spinner-three-bounce {
+    top: 25%;
+    &> div {
+      width: 10px;
+      height: 10px;
+    }   
+  }
+
+}
+
 
 // Modification du core
 

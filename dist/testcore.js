@@ -3200,7 +3200,7 @@ module.exports = {
   'add': _.template('<div class="add-comment">Comment</div>'),
   'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
   CSS: {
-    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
+    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.img-comment{min-width:100px;min-height:50px}.img-comment img{max-width:400px;max-height:200px}.img-comment .spinner-three-bounce{top:25%}.img-comment .spinner-three-bounce>div{width:10px;height:10px}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
     'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
   }
 };
@@ -3237,11 +3237,11 @@ var $Testcore = Testcore;
   },
   bindEvents: function() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make);
-    this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar);
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate);
     this.listenTo(this.core.mediaControl.container, 'container:play', this.play);
   },
   render: function() {
+    this.core.options.commentImg = this.core.options.commentImg != undefined ? this.core.options.commentImg : true;
     this.videoId = this.core.$el.parent().attr('data-video-id');
     this.make();
   },
@@ -3266,7 +3266,11 @@ var $Testcore = Testcore;
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
-    this.getComments(this.core.options.videoId);
+    if (!isNaN(this.core.mediaControl.container.getDuration())) {
+      this.getComments(this.core.options.videoId);
+    } else {
+      this.videoUnReady = true;
+    }
     this.core.mediaControl.container.$el.find('.submit-comment').click((function() {
       return $__0.submitComment($__0);
     }));
@@ -3294,48 +3298,65 @@ var $Testcore = Testcore;
     }));
   },
   createCommentPointer: function(data) {
-    console.log(data);
     this.pointers[data.time] = document.createElement("span");
-    $(this.pointers[data.time]).addClass("comment-pointer").attr('data-comment', data.comment).attr('data-img-url');
+    $(this.pointers[data.time]).addClass("comment-pointer").attr('data-comment', data.comment);
+    if (data.imgUrl) {
+      $(this.pointers[data.time]).attr('data-imgUrl', data.imgUrl);
+    }
     this.timePercent = (data.time / this.core.mediaControl.container.getDuration()) * 100;
     $(this.pointers[data.time]).css('left', this.timePercent + '%');
-    this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time]);
+    if (!isNaN(this.timePercent)) {
+      this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time]);
+    }
   },
   showComment: function(elem, pointer) {
     elem.core.mediaControl.seekTime.$('.video-comment').html($(pointer).attr('data-comment')).addClass('comment-actif');
+    if (this.core.options.videoId && $(pointer).attr('data-imgUrl')) {
+      elem.core.mediaControl.seekTime.$('.video-comment').prepend('<div class="img-comment"><div class="spinner-three-bounce" data-spinner><div data-bounce1></div><div data-bounce2></div><div data-bounce3></div></div></div>');
+      $("<img />").attr('src', 'http://www.mattlunn.me.uk/blog/wp-content/uploads/2014/01/cropped-cropped-02124_tuscansunsetmondaymay25th2009_1440x900.jpg').load(function() {
+        if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {} else {
+          elem.core.mediaControl.seekTime.$('.img-comment').html(this);
+          this.animate({opacity: 0.25}, 500, 'ease-out', function() {
+            return false;
+          });
+        }
+      });
+    }
   },
   hideComment: function(elem) {
     elem.core.mediaControl.seekTime.$('.video-comment').html('').removeClass('comment-actif');
   },
   submitComment: function(elem) {
     var form = elem.core.mediaControl.container.$el.find('form');
+    var fd = new FormData();
     var inputs = $(form).serializeArray();
-    console.log(Math.round(elem.actualTime));
-    inputs.push({
-      name: "time",
-      value: Math.round(elem.actualTime)
+    $.each(inputs, function(key, input) {
+      fd.append(input.name, input.value);
     });
-    console.log(inputs);
+    fd.append('time', Math.round(elem.actualTime));
     $.ajax({
       url: 'http://minetop.com/submit-comment',
       type: 'POST',
-      data: inputs,
-      dataType: 'json',
+      data: fd,
+      async: false,
       success: function(data) {
         elem.createCommentPointer(data);
         elem.displayingComment(elem);
         elem.dismissForm();
-      }
+      },
+      cache: false,
+      contentType: false,
+      processData: false
     });
   },
   click: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
-      console.log($(this.$el.formComment));
       $(this.$el.formComment).removeClass('show-form');
     } else {
       this.core.mediaControl.container.pause();
       this.$playButton.addClass('paused');
-      $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
+      var actualTime = Math.round(this.actualTime) / 100;
+      $(this.$el.formComment).find('.comment-time').text(actualTime);
       $(this.$el.formComment).addClass('show-form');
     }
   },
@@ -3343,6 +3364,10 @@ var $Testcore = Testcore;
     this.actualTime = position;
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime) / 100);
+    }
+    if (this.videoUnReady && this.videoUnReady == true) {
+      this.getComments(this.core.options.videoId);
+      this.videoUnReady == false;
     }
   }
 }, {}, UiCorePlugin);
