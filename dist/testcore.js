@@ -3316,9 +3316,6 @@ var $Testcore = Testcore;
       $("<img />").attr('src', 'http://www.mattlunn.me.uk/blog/wp-content/uploads/2014/01/cropped-cropped-02124_tuscansunsetmondaymay25th2009_1440x900.jpg').load(function() {
         if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {} else {
           elem.core.mediaControl.seekTime.$('.img-comment').html(this);
-          this.animate({opacity: 0.25}, 500, 'ease-out', function() {
-            return false;
-          });
         }
       });
     }

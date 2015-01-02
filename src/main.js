@@ -156,9 +156,12 @@ class Testcore extends UiCorePlugin {
                 // wrong image
             } else {
                 elem.core.mediaControl.seekTime.$('.img-comment').html(this)
-               this.animate({
+
+                // doesnt work :
+               /*this.animate({
                   opacity: 0.25
-                }, 500, 'ease-out', function(){return false;})
+                }, 500, 'ease-out');*/
+
             }
         });
     
