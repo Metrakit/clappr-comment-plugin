@@ -1,4 +1,4 @@
-clappr-test-plugin
+clappr-comment-plugin
 ==================
 
-A plugin for add comments on a second sidebar
+A plugin for add comments and show comments on the sidebar
