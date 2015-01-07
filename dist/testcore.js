@@ -3280,7 +3280,7 @@ var $Testcore = Testcore;
   getComments: function(videoId) {
     if (!this.pointers) {
       this.pointers = new Array;
-      $.get('http://minetop.com/comments-video/' + videoId, (function(data) {
+      $.get(this.core.options.urlGetComments + '/' + videoId, (function(data) {
         for (var i = 0; i < data.length; i++) {
           this.createCommentPointer(data[i]);
         }
@@ -3332,7 +3332,7 @@ var $Testcore = Testcore;
     });
     fd.append('time', Math.round(elem.actualTime));
     $.ajax({
-      url: 'http://minetop.com/submit-comment',
+      url: this.core.options.urlAddComments,
       type: 'POST',
       data: fd,
       async: false,

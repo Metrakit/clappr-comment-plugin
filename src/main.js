@@ -103,7 +103,7 @@ class Testcore extends UiCorePlugin {
 
     if (!this.pointers) {
       this.pointers = new Array;
-      $.get('http://minetop.com/comments-video/' + videoId, (function(data) {
+      $.get(this.core.options.urlGetComments + '/' + videoId, (function(data) {
 
         for(var i = 0; i < data.length; i++) {
             this.createCommentPointer(data[i])
@@ -195,7 +195,7 @@ class Testcore extends UiCorePlugin {
 
 
     $.ajax({
-      url: 'http://minetop.com/submit-comment',
+      url: this.core.options.urlAddComments,
       type: 'POST',
       data: fd,
       async: false,

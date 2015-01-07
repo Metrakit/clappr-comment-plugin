@@ -8,7 +8,7 @@
   <script type="text/javascript" charset="utf-8" src="dist/testcore.js"></script>
 
   <!-- Live reload -->
-  <script src="http://localhost:35729/livereload.js"></script>
+  <!--<script src="http://localhost:35729/livereload.js"></script>-->
 
   <title>testcore Test Page</title>
   <script type="text/javascript" charset="utf-8">
@@ -19,7 +19,9 @@
     plugins: {
       core: [Testcore]
     },
-    videoId: 1
+    videoId: 1,
+    urlGetComments: "http://minetop.com/comments-video",
+    urlAddComments: "http://minetop.com/submit-comment"
   });
 
 
