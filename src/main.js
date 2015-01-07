@@ -156,7 +156,7 @@ class Testcore extends UiCorePlugin {
       if (this.core.options.videoId && $(pointer).attr('data-imgUrl')) {
         elem.core.mediaControl.seekTime.$('.video-comment').prepend('<div class="img-comment"><div class="spinner-three-bounce" data-spinner><div data-bounce1></div><div data-bounce2></div><div data-bounce3></div></div></div>')
 
-        $("<img />").attr('src', 'http://www.mattlunn.me.uk/blog/wp-content/uploads/2014/01/cropped-cropped-02124_tuscansunsetmondaymay25th2009_1440x900.jpg')
+        $("<img />").attr('src', $(pointer).attr('data-imgUrl'))
         .load(function() {
             if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {
                 // wrong image
@@ -189,7 +189,7 @@ class Testcore extends UiCorePlugin {
     }*/
     var inputs = $(form).serializeArray();
     $.each(inputs, function(key, input) {
-        fd.append(input.name,input.value);
+        fd.append(input.name, input.value);
     })
     fd.append('time', Math.round(elem.actualTime));
 
