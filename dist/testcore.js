@@ -3,7 +3,7 @@
 module.exports = require("./src/main");
 
 
-//# sourceURL=C:/wamp/www/clappr-test-plugin/index.js
+//# sourceURL=C:/www/project1/clappr/index.js
 },{"./src/main":7}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3206,7 +3206,7 @@ module.exports = {
 };
 
 
-//# sourceURL=C:/wamp/www/clappr-test-plugin/src/jst.js
+//# sourceURL=C:/www/project1/clappr/src/jst.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],7:[function(require,module,exports){
 (function (global){
@@ -3371,7 +3371,7 @@ var $Testcore = Testcore;
 module.exports = window.Testcore = Testcore;
 
 
-//# sourceURL=C:/wamp/www/clappr-test-plugin/src/main.js
+//# sourceURL=C:/www/project1/clappr/src/main.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./jst":6,"./styler":8,"events":2,"ui_core_plugin":"ui_core_plugin"}],8:[function(require,module,exports){
 (function (global){
@@ -3386,6 +3386,6 @@ var Styler = {getStyleFor: function(name, options) {
 module.exports = Styler;
 
 
-//# sourceURL=C:/wamp/www/clappr-test-plugin/src/styler.js
+//# sourceURL=C:/www/project1/clappr/src/styler.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./jst":6,"zepto":"zepto"}]},{},[5,1]);

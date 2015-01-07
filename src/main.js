@@ -122,6 +122,12 @@ class Testcore extends UiCorePlugin {
     this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', () => this.hideComment(this));
   }
 
+  /**
+    Data :
+      comment
+      time
+      imgUrl
+  **/
   createCommentPointer(data) {
     //console.log(data)
     this.pointers[data.time] = document.createElement("span")
