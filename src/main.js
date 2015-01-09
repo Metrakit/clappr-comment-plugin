@@ -99,7 +99,18 @@ class Comments extends UiCorePlugin {
     styleOptions += "</style>";
 
     this.$el.formComment = document.createElement("div")
-    $(this.$el.formComment).html(JST.form)
+
+    if (this.core.options.commentText) {
+      var addAt = this.core.options.commentText.addAtminutes ? this.core.options.commentText.addAt : "Add a comment at";
+      var seconds = this.core.options.commentText.seconds ? this.core.options.commentText.minutes : "minutes";
+      var placeholder = this.core.options.commentText.placeholder ? this.core.options.commentText.placeholder : "Put a comment here";
+    } else {
+      var addAt = "Add a comment at";
+      var minutes = "minutes";
+      var placeholder = "Put a comment here";
+    }
+
+    $(this.$el.formComment).html(JST.form({addAt: 'sdsd'}))
           .addClass('form-comment')
           .append(styleForm)
           .append(styleOptions)
@@ -114,9 +125,11 @@ class Comments extends UiCorePlugin {
      *  Options
      */
 
-    // [OPTION] Icon for add a new comment
+    // [OPTION] Icon for add a new comment or Text
     if (this.core.options.iconComment) {
       this.core.mediaControl.$el.find('.add-comment').addClass(this.core.options.iconComment);
+    } else if (this.core.options.commentText && this.core.options.commentText.add) {
+      this.core.mediaControl.$el.find('.add-comment').text(this.core.options.commentText.add);
     } else {
       this.core.mediaControl.$el.find('.add-comment').text('Comment');
     }

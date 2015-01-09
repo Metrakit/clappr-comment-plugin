@@ -4,7 +4,7 @@ module.exports = {
 
   'add': _.template('<span class="add-comment"></span>'),
 
-  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<input name="picture" type="file" />	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
+  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<input name="picture" type="file" />	<p><%- addAt %> <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
 
   CSS: {
     
