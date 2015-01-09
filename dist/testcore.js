@@ -3197,11 +3197,11 @@ System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 "use strict";
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 module.exports = {
-  'add': _.template('<div class="add-comment">Comment</div>'),
-  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
+  'add': _.template('<span class="add-comment"></span>'),
+  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<input name="picture" type="file" />	<p>Add a comment at <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
   CSS: {
-    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comments-controls[data-comments-controls] .add-comment{cursor:default;font-family:Roboto,"Open Sans",Arial,sans-serif}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.img-comment{min-width:100px;min-height:50px}.img-comment img{max-width:200px;max-height:200px}.img-comment .spinner-three-bounce{top:25%}.img-comment .spinner-three-bounce>div{width:10px;height:10px}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
-    'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
+    'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-right:3px}.comments-controls[data-comments-controls] .add-comment{cursor:pointer;opacity:.8;font-weight:lighter}.comments-controls[data-comments-controls] .add-comment:before{font-size:16px}.comments-controls[data-comments-controls] .add-comment:hover{text-shadow:rgba(255,255,255,.8) 0 0 5px;opacity:1}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.img-comment{min-width:100px;min-height:50px}.img-comment img{max-width:200px;max-height:200px}.img-comment .spinner-three-bounce{top:25%}.img-comment .spinner-three-bounce>div{width:10px;height:10px}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
+    'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment button,.form-comment input,.form-comment textarea{font:initial;font-size:initial;line-height:initial;color:initial}.form-comment p{color:initial;font-size:initial!important}.form-comment input[type=file]{display:none}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
   }
 };
 
@@ -3260,12 +3260,28 @@ var $Testcore = Testcore;
     this.$el.html(JST.add).append(styleAddBtn);
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
     var styleForm = Styler.getStyleFor('form');
+    var styleOptions = '<style class="clappr-style">';
+    if (this.core.options.iconFont) {
+      styleOptions += ".add-comment { font-family: " + this.core.options.iconFont + " !important; } ";
+    }
+    if (this.core.options.pointerColor) {
+      styleOptions += ".comment-pointer { background: " + this.core.options.pointerColor + " !important; } ";
+    }
+    styleOptions += "</style>";
     this.$el.formComment = document.createElement("div");
-    $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm);
+    $(this.$el.formComment).html(JST.form).addClass('form-comment').append(styleForm).append(styleOptions);
     this.core.mediaControl.container.$el.append(this.$el.formComment);
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
+    if (this.core.options.iconComment) {
+      this.core.mediaControl.$el.find('.add-comment').addClass(this.core.options.iconComment);
+    } else {
+      this.core.mediaControl.$el.find('.add-comment').text('Comment');
+    }
+    if (this.core.options.enablePicture) {
+      this.core.mediaControl.container.$el.find('input[type="file"]').show();
+    }
     if (!isNaN(this.core.mediaControl.container.getDuration())) {
       this.getComments(this.core.options.videoId);
     } else {
@@ -3316,6 +3332,7 @@ var $Testcore = Testcore;
       $("<img />").attr('src', $(pointer).attr('data-imgUrl')).load(function() {
         if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {} else {
           elem.core.mediaControl.seekTime.$('.img-comment').html(this);
+          this.animate({opacity: 0.25}, 500, 'ease-out');
         }
       });
     }
@@ -3326,6 +3343,12 @@ var $Testcore = Testcore;
   submitComment: function(elem) {
     var form = elem.core.mediaControl.container.$el.find('form');
     var fd = new FormData();
+    if (this.core.options.enablePicture) {
+      var picture = $('input[type="file"]')[1].files;
+      if (picture.length == 1) {
+        fd.append('picture', picture[0]);
+      }
+    }
     var inputs = $(form).serializeArray();
     $.each(inputs, function(key, input) {
       fd.append(input.name, input.value);

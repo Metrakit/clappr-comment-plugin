@@ -1,4 +1,22 @@
 .form-comment {
+
+
+	// RAZ (Bootstrap, ...)
+	button, input, textarea {
+		font: initial;
+		font-size: initial;
+		line-height: initial; 
+		color: initial;
+	}
+	p {
+		color: initial;
+		font-size: initial !important;
+	}
+
+	input[type="file"] {
+	    display: none;
+	}
+
 	position: absolute;
 	width: 50%;
 	margin-left: auto;

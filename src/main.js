@@ -30,15 +30,12 @@ class Testcore extends UiCorePlugin {
   constructor(core) {
     super(core)
     this.core = core
-    //this.percentTime = 0
     this.actualTime = 0
-    //this.percentHoverTime = 0    
   }
 
 
   bindEvents() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make)
-    //this.listenTo(this.core.mediaControl, 'mediacontrol:mousemove:seekbar', this.hoverBar)
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
     this.listenTo(this.core.mediaControl.container, 'container:play', this.play)
   }
@@ -75,16 +72,55 @@ class Testcore extends UiCorePlugin {
 
     // Create new DOM element for add the form
     var styleForm = Styler.getStyleFor('form');
+
+    /**
+     *  Style options
+     */
+
+    var styleOptions = '<style class="clappr-style">';
+
+    // [OPTION] Icon font
+    if (this.core.options.iconFont) {
+      styleOptions += ".add-comment { font-family: " + this.core.options.iconFont + " !important; } ";
+    }    
+
+    // [OPTION] Pointer color
+    if (this.core.options.pointerColor) {
+      styleOptions += ".comment-pointer { background: " + this.core.options.pointerColor + " !important; } ";
+    }    
+
+    styleOptions += "</style>";
+
     this.$el.formComment = document.createElement("div")
     $(this.$el.formComment).html(JST.form)
           .addClass('form-comment')
           .append(styleForm)
+          .append(styleOptions)
     this.core.mediaControl.container.$el.append(this.$el.formComment)
 
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
 
+
+    /**
+     *  Options
+     */
+
+    // [OPTION] Icon for add a new comment
+    if (this.core.options.iconComment) {
+      this.core.mediaControl.$el.find('.add-comment').addClass(this.core.options.iconComment);
+    } else {
+      this.core.mediaControl.$el.find('.add-comment').text('Comment');
+    }
+
+    // [OPTION] Display input file if picture is enabled
+    if (this.core.options.enablePicture) {
+      this.core.mediaControl.container.$el.find('input[type="file"]').show();
+    }  
+
+
+    // Generate comment (get the video Id in option)
     if (!isNaN(this.core.mediaControl.container.getDuration())) {
       this.getComments(this.core.options.videoId)
     } else {
@@ -99,6 +135,7 @@ class Testcore extends UiCorePlugin {
 
   }
 
+
   getComments(videoId) { 
 
     if (!this.pointers) {
@@ -108,7 +145,7 @@ class Testcore extends UiCorePlugin {
         for(var i = 0; i < data.length; i++) {
             this.createCommentPointer(data[i])
         }
-        //this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', () => this.showComment(this));
+
         this.displayingComment(this)
       }).bind(this))
 
@@ -129,19 +166,18 @@ class Testcore extends UiCorePlugin {
       imgUrl
   **/
   createCommentPointer(data) {
-    //console.log(data)
+
     this.pointers[data.time] = document.createElement("span")
     $(this.pointers[data.time]).addClass("comment-pointer")
         .attr('data-comment', data.comment)
 
     if(data.imgUrl) {
       $(this.pointers[data.time]).attr('data-imgUrl', data.imgUrl)
-      //console.log('img url')
     }
-        //this.timeUpdate
+
     this.timePercent = (data.time / this.core.mediaControl.container.getDuration()) * 100
     $(this.pointers[data.time]).css('left', this.timePercent + '%');
-    //console.log(this.timePercent)
+
     if (!isNaN(this.timePercent)) {
       this.core.mediaControl.$seekBarContainer.append(this.pointers[data.time])
     }
@@ -164,9 +200,9 @@ class Testcore extends UiCorePlugin {
                 elem.core.mediaControl.seekTime.$('.img-comment').html(this)
 
                 // doesnt work :
-               /*this.animate({
+               this.animate({
                   opacity: 0.25
-                }, 500, 'ease-out');*/
+                }, 500, 'ease-out');
 
             }
         });
@@ -183,16 +219,25 @@ class Testcore extends UiCorePlugin {
 
     var form = elem.core.mediaControl.container.$el.find('form') 
     var fd = new FormData();
-    //var file_data = $('input[type="file"]')[0].files; // for multiple files
-   /* for(var i = 0;i<file_data.length;i++){
-        fd.append("file_"+i, file_data[i]);
-    }*/
+
+    // [OPTION] Add input file if enabled
+    if (this.core.options.enablePicture) {
+
+        var picture = $('input[type="file"]')[1].files;
+
+      if (picture.length == 1) {
+        fd.append('picture', picture[0])
+      }
+  
+    }
+
+    // All inputs
     var inputs = $(form).serializeArray();
+
     $.each(inputs, function(key, input) {
         fd.append(input.name, input.value);
     })
     fd.append('time', Math.round(elem.actualTime));
-
 
     $.ajax({
       url: this.core.options.urlAddComments,
@@ -220,16 +265,12 @@ class Testcore extends UiCorePlugin {
       var actualTime = Math.round(this.actualTime)/100
       $(this.$el.formComment).find('.comment-time').text(actualTime)
       $(this.$el.formComment).addClass('show-form')
-      //console.log('click on button, temps actuel: ' + this.percentTime + '%')
-      //console.log('Poster un commentaire a ' + Math.round(this.actualTime) + ' secondes')s
     }
 
   }
 
   timeUpdate(position, duration) {
     this.actualTime = position;
-    /*this.percentTime = ((position / duration) * 100);
-    $('.bob2').text(Math.round(this.percentTime) + '%');*/
 
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).find('.comment-time').text(Math.round(this.actualTime)/100)
@@ -240,21 +281,6 @@ class Testcore extends UiCorePlugin {
       this.videoUnReady == false
     }
   }
-
-  /*hoverBar(event) {
-
-    // BETTER :
-    //this.core.mediaControl.container.getDuration()
-    var width = this.core.mediaControl.$seekBarContainer[0].scrollWidth;
-    var currentWidth = event.pageX;
-
-    var diff = width - currentWidth;
-
-    this.percentHoverTime = 100 - ((diff / width) * 100);
-
-    $('.bob').text(Math.round(this.percentHoverTime) + '%');
-
-  }*/
 
 }
 

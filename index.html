@@ -7,8 +7,11 @@
   <script type="text/javascript" charset="utf-8" src="dist/clappr.min.js"></script>
   <script type="text/javascript" charset="utf-8" src="dist/testcore.js"></script>
 
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
   <!-- Live reload -->
-  <!--<script src="http://localhost:35729/livereload.js"></script>-->
+  <script src="http://localhost:35729/livereload.js"></script>
 
   <title>testcore Test Page</title>
   <script type="text/javascript" charset="utf-8">
@@ -19,9 +22,16 @@
     plugins: {
       core: [Testcore]
     },
+
+    // Comment options
     videoId: 1,
     urlGetComments: "http://minetop.com/comments-video",
-    urlAddComments: "http://minetop.com/submit-comment"
+    urlAddComments: "http://minetop.com/submit-comment",
+    iconComment: "fa fa-comment-o",
+    iconFont: "FontAwesome",
+    pointerColor: "blue",
+    enablePicture: true
+
   });
 
 
@@ -29,9 +39,39 @@
 
 }
   </script>
+
+  <style>
+    .player {
+      width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+
 </head>
 <body>
-  <div id="player-wrapper"></div>
+
+  <div class="container">
+
+    <h2 class="text-center">Clappr comments plugin</h2>
+
+    <div class="player" id="player-wrapper"></div>
+
+    <h3>Repository: <a href="https://github.com/metrakit/clappr-comment-plugin">https://github.com/metrakit/clappr-comment-plugin</a></h3>
+
+    <h3>Options</h3>
+
+    <pre>
+      urlGetComments: "http://minetop.com/comments-video",
+      urlAddComments: "http://minetop.com/submit-comment",
+      iconComment: "fa fa-comment-o",
+      iconFont: "FontAwesome",
+      pointerColor: "blue",
+      enablePicture: true
+    </pre>
+
+  </div>
+
 </body>
 </html>
 
