@@ -3216,15 +3216,15 @@ var JST = require('./jst');
 var Styler = require('./styler');
 var Events = require('events');
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
-var Testcore = function Testcore(core) {
-  $traceurRuntime.superConstructor($Testcore).call(this, core);
+var Comments = function Comments(core) {
+  $traceurRuntime.superConstructor($Comments).call(this, core);
   this.core = core;
   this.actualTime = 0;
 };
-var $Testcore = Testcore;
-($traceurRuntime.createClass)(Testcore, {
+var $Comments = Comments;
+($traceurRuntime.createClass)(Comments, {
   get name() {
-    return 'testcore';
+    return 'comments';
   },
   get events() {
     return {'click .add-comment': 'clickOnContainer'};
@@ -3398,7 +3398,7 @@ var $Testcore = Testcore;
     }
   }
 }, {}, UiCorePlugin);
-module.exports = window.Testcore = Testcore;
+module.exports = window.Comments = Comments;
 
 
 //# sourceURL=C:/www/project1/clappr/src/main.js

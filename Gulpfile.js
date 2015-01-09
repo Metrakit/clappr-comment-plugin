@@ -42,7 +42,7 @@ gulp.task('build', ['pre-build'], function(b) {
     .external('ui_container_plugin')
     .bundle()
     .pipe(source('main.js'))
-    .pipe(rename( 'testcore.js'))
+    .pipe(rename( 'comments.js'))
     .pipe(gulp.dest('./dist'));
 });
 
@@ -66,7 +66,7 @@ gulp.task('release', ['pre-build'], function() {
     .external('mediator')
     .bundle()
     .pipe(source('main.js'))
-    .pipe(rename( 'testcore.min.js'))
+    .pipe(rename( 'comments.min.js'))
     .pipe(streamify(uglify()))
     .pipe(gulp.dest('./dist'));
 });

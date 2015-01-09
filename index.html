@@ -4,7 +4,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <script type="text/javascript" charset="utf-8" src="dist/underscore-min.js"></script>
   <script type="text/javascript" charset="utf-8" src="dist/clappr.min.js"></script>
-  <script type="text/javascript" charset="utf-8" src="dist/testcore.js"></script>
+  <script type="text/javascript" charset="utf-8" src="dist/comments.js"></script>
 
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
@@ -14,29 +14,27 @@
 
   <title>Clappr comment plugin - Labs of Jordane</title>
   <script type="text/javascript" charset="utf-8">
-  window.onload = function() {
-  var player = new Clappr.Player({
-    sources: ['http://clappr.com/highline.mp4'],
-    width: 800,
-    plugins: {
-      core: [Testcore]
-    },
+    window.onload = function() {
+      var player = new Clappr.Player({
+        sources: ['http://clappr.com/highline.mp4'],
+        width: 800,
+        plugins: {
+          core: [Comments]
+        },
 
-    // Comment options
-    videoId: 1,
-    urlGetComments: "http://minetop.com/comments-video",
-    urlAddComments: "http://minetop.com/submit-comment",
-    iconComment: "fa fa-comment-o",
-    iconFont: "FontAwesome",
-    pointerColor: "blue",
-    enablePicture: true
+        // Comment options
+        videoId: 1,
+        urlGetComments: "http://minetop.com/comments-video",
+        urlAddComments: "http://minetop.com/submit-comment",
+        iconComment: "fa fa-comment-o",
+        iconFont: "FontAwesome",
+        pointerColor: "blue",
+        enablePicture: true
 
-  });
+      });
 
-
-  player.attachTo(document.getElementById('player-wrapper'));
-
-}
+      player.attachTo(document.getElementById('player-wrapper'));
+    }
   </script>
 
   <style>
@@ -52,7 +50,7 @@
 
   <div class="container">
 
-    <h2 class="text-center">Clappr comments plugin</h2>
+    <h2 class="text-center">Clappr comment plugin</h2>
 
     <div class="player" id="player-wrapper"></div>
 

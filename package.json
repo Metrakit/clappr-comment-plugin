@@ -1,6 +1,25 @@
 {
-  "name": "testcore",
-  "version": "0.0.0",
+  "name": "Clappr-comment-plugin",
+  "version": "0.0.1",
+  "description": "Comment plugin for Clappr Player",
+  "main": "dist/comments.js",
+  "author": "Jordane JOUFFROY",
+  "keywords": [
+    "comments",
+    "social",
+    "clappr",
+    "player",
+    "online video",
+    "streaming"
+  ],
+  "homepage": "http://labs.jordane.net/clappr-comment",
+  "bugs": {
+    "url": "https://github.com/Metrakit/clappr-comment-plugin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Metrakit/clappr-comment-plugin.git"
+  },
   "dependencies": {
     "clappr": "latest",
     "underscore" : "1.7.0"

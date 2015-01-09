@@ -11,9 +11,9 @@ Creer un autre plugin pour partager sur les resaux sociaux avec le temps actuel 
 
 */
 
-class Testcore extends UiCorePlugin {
+class Comments extends UiCorePlugin {
 
-  get name() { return 'testcore'; }
+  get name() { return 'comments'; }
 
   get events() {
     return {
@@ -346,4 +346,4 @@ class Testcore extends UiCorePlugin {
 }
 
 
-module.exports = window.Testcore = Testcore;
+module.exports = window.Comments = Comments;
