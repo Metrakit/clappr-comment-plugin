@@ -3227,7 +3227,7 @@ var $Testcore = Testcore;
     return 'testcore';
   },
   get events() {
-    return {'click .add-comment': 'click'};
+    return {'click .add-comment': 'clickOnContainer'};
   },
   get attributes() {
     return {
@@ -3247,11 +3247,6 @@ var $Testcore = Testcore;
   },
   play: function() {
     this.dismissForm();
-  },
-  dismissForm: function() {
-    if ($(this.$el.formComment).css('visibility') == "visible") {
-      $(this.$el.formComment).removeClass('show-form');
-    }
   },
   make: function() {
     var $__0 = this;
@@ -3296,6 +3291,10 @@ var $Testcore = Testcore;
   getComments: function(videoId) {
     if (!this.pointers) {
       this.pointers = new Array;
+      if (!this.core.options.urlGetComments) {
+        alert('An url is needed in the options for the API (POST). Option "urlGetComments"');
+        return;
+      }
       $.get(this.core.options.urlGetComments + '/' + videoId, (function(data) {
         for (var i = 0; i < data.length; i++) {
           this.createCommentPointer(data[i]);
@@ -3332,7 +3331,6 @@ var $Testcore = Testcore;
       $("<img />").attr('src', $(pointer).attr('data-imgUrl')).load(function() {
         if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {} else {
           elem.core.mediaControl.seekTime.$('.img-comment').html(this);
-          this.animate({opacity: 0.25}, 500, 'ease-out');
         }
       });
     }
@@ -3341,6 +3339,10 @@ var $Testcore = Testcore;
     elem.core.mediaControl.seekTime.$('.video-comment').html('').removeClass('comment-actif');
   },
   submitComment: function(elem) {
+    if (!this.core.options.urlAddComments) {
+      alert('An url is needed in the options for the API (POST). Option "urlAddComments"');
+      return;
+    }
     var form = elem.core.mediaControl.container.$el.find('form');
     var fd = new FormData();
     if (this.core.options.enablePicture) {
@@ -3369,7 +3371,12 @@ var $Testcore = Testcore;
       processData: false
     });
   },
-  click: function() {
+  dismissForm: function() {
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).removeClass('show-form');
+    }
+  },
+  clickOnContainer: function() {
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).removeClass('show-form');
     } else {

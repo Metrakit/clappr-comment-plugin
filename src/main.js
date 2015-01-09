@@ -14,18 +14,19 @@ Creer un autre plugin pour partager sur les resaux sociaux avec le temps actuel 
 class Testcore extends UiCorePlugin {
 
   get name() { return 'testcore'; }
+
   get events() {
     return {
-      'click .add-comment': 'click',
+      'click .add-comment': 'clickOnContainer',
     }
   }
+
   get attributes() {
     return {
       'class': 'comments-controls',
       'data-comments-controls': '',
     }
   }
-
 
   constructor(core) {
     super(core)
@@ -34,6 +35,9 @@ class Testcore extends UiCorePlugin {
   }
 
 
+  /**
+   * Bind events
+   */
   bindEvents() {
     this.listenTo(this.core.mediaControl, 'mediacontrol:rendered', this.make)
     this.listenTo(this.core.mediaControl.container, 'container:timeupdate', this.timeUpdate)
@@ -41,6 +45,9 @@ class Testcore extends UiCorePlugin {
   }
 
 
+  /**
+   * Render
+   */
   render() {
     this.core.options.commentImg = this.core.options.commentImg != undefined ? this.core.options.commentImg : true;
     this.videoId = this.core.$el.parent().attr('data-video-id')
@@ -48,17 +55,17 @@ class Testcore extends UiCorePlugin {
   }
 
 
+  /**
+   * Event on play
+   */
   play() {
     this.dismissForm()
   }
 
 
-  dismissForm() {
-    if ($(this.$el.formComment).css('visibility') == "visible") {
-      $(this.$el.formComment).removeClass('show-form')
-    }
-  }
-
+  /**
+   * Make the template and prepare the plugin
+   */
   make() {
       // Create new DOM element add a button
     var styleAddBtn = Styler.getStyleFor('add');
@@ -136,10 +143,19 @@ class Testcore extends UiCorePlugin {
   }
 
 
+  /**
+   * Get the comments with API (GET)
+   * @param  Int videoId
+   */
   getComments(videoId) { 
 
     if (!this.pointers) {
       this.pointers = new Array;
+      // Alert if "urlGetComments" is missing
+      if (!this.core.options.urlGetComments) {
+        alert('An url is needed in the options for the API (POST). Option "urlGetComments"'); return;
+      }
+
       $.get(this.core.options.urlGetComments + '/' + videoId, (function(data) {
 
         for(var i = 0; i < data.length; i++) {
@@ -152,6 +168,11 @@ class Testcore extends UiCorePlugin {
     }
   }
 
+
+  /**
+   * Display comment when event with mouse
+   * @param Object this
+   */
   displayingComment(elem) {
     this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseover', (function(e) {
       elem.showComment(elem, this)
@@ -159,12 +180,11 @@ class Testcore extends UiCorePlugin {
     this.core.mediaControl.$seekBarContainer.find('.comment-pointer').on('mouseout', () => this.hideComment(this));
   }
 
+
   /**
-    Data :
-      comment
-      time
-      imgUrl
-  **/
+   * Create a comment pointers
+   * @param Json data[comment, time, imgUrl]
+   */
   createCommentPointer(data) {
 
     this.pointers[data.time] = document.createElement("span")
@@ -184,11 +204,17 @@ class Testcore extends UiCorePlugin {
     
   }
 
+
+  /**
+   * Show a comment when hover a pointer
+   * @param  this
+   * @param  DOM pointer
+   */
   showComment(elem, pointer) {
     elem.core.mediaControl.seekTime.$('.video-comment')
       .html($(pointer).attr('data-comment'))
-      .addClass('comment-actif')
-      //console.log(this.core.options.videoId)
+      .addClass('comment-actif');
+
       if (this.core.options.videoId && $(pointer).attr('data-imgUrl')) {
         elem.core.mediaControl.seekTime.$('.video-comment').prepend('<div class="img-comment"><div class="spinner-three-bounce" data-spinner><div data-bounce1></div><div data-bounce2></div><div data-bounce3></div></div></div>')
 
@@ -198,24 +224,37 @@ class Testcore extends UiCorePlugin {
                 // wrong image
             } else {
                 elem.core.mediaControl.seekTime.$('.img-comment').html(this)
-
-                // doesnt work :
-               this.animate({
-                  opacity: 0.25
-                }, 500, 'ease-out');
-
             }
         });
     
       }
   }
 
+
+  /**
+   * Hide a comment
+   * @param  this
+   */
   hideComment(elem) {
     elem.core.mediaControl.seekTime.$('.video-comment').html('')
       .removeClass('comment-actif')
   }
 
+
+  /**
+   * Send a new comment to API (POST) 
+   * Data: 
+   *     comment (string)
+   *     picture (file, optionnal)
+   *     time (int)   
+   * @param Object this
+   */
   submitComment(elem) {
+
+    // Alert if "urlAddComments" is missing
+    if (!this.core.options.urlAddComments) {
+      alert('An url is needed in the options for the API (POST). Option "urlAddComments"'); return;
+    }
 
     var form = elem.core.mediaControl.container.$el.find('form') 
     var fd = new FormData();
@@ -239,6 +278,7 @@ class Testcore extends UiCorePlugin {
     })
     fd.append('time', Math.round(elem.actualTime));
 
+    // Ajax request for send the comment form
     $.ajax({
       url: this.core.options.urlAddComments,
       type: 'POST',
@@ -255,7 +295,21 @@ class Testcore extends UiCorePlugin {
     })
   }
 
-  click() { 
+
+  /**
+   * Dismiss the form
+   */
+  dismissForm() {
+    if ($(this.$el.formComment).css('visibility') == "visible") {
+      $(this.$el.formComment).removeClass('show-form')
+    }
+  }
+
+
+  /**
+   * Event when click on container
+   */
+  clickOnContainer() { 
 
     if ($(this.$el.formComment).css('visibility') == "visible") {
       $(this.$el.formComment).removeClass('show-form')
@@ -269,6 +323,12 @@ class Testcore extends UiCorePlugin {
 
   }
 
+
+  /**
+   * Event when time change
+   * @param Int position
+   * @param Int duration
+   */
   timeUpdate(position, duration) {
     this.actualTime = position;
 
@@ -281,6 +341,7 @@ class Testcore extends UiCorePlugin {
       this.videoUnReady == false
     }
   }
+
 
 }
 
