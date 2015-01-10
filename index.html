@@ -16,7 +16,7 @@
   <script type="text/javascript" charset="utf-8">
     window.onload = function() {
       var player = new Clappr.Player({
-        sources: ['http://clappr.com/highline.mp4'],
+        sources: ['http://clappr.io/highline.mp4'],
         width: 800,
         plugins: {
           core: [Comments]
@@ -24,15 +24,19 @@
 
         // Comment options
         videoId: 1,
-        urlGetComments: "http://minetop.com/comments-video",
-        urlAddComments: "http://minetop.com/submit-comment",
+        urlGetComments: "http://larabb.com/comments-video",
+        urlAddComments: "http://larabb.com/submit-comment",
         iconComment: "fa fa-comment-o",
         iconFont: "FontAwesome",
         pointerColor: "blue",
         enablePicture: true,
         pointerColor: "blue",
-        commentText: {
-          add: 'Comment'
+        texts: {
+          addComment: 'Add a comment at',
+          addCommentLink: "Comment",
+          minutes: "minutes",
+          commentPlaceholder: "Put a comment here",
+          sendComment: "Send"
         }
 
       });

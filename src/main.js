@@ -100,17 +100,24 @@ class Comments extends UiCorePlugin {
 
     this.$el.formComment = document.createElement("div")
 
-    if (this.core.options.commentText) {
-      var addAt = this.core.options.commentText.addAtminutes ? this.core.options.commentText.addAt : "Add a comment at";
-      var seconds = this.core.options.commentText.seconds ? this.core.options.commentText.minutes : "minutes";
-      var placeholder = this.core.options.commentText.placeholder ? this.core.options.commentText.placeholder : "Put a comment here";
+    if (this.core.options.texts) {
+      var formText = {
+        addAt: this.core.options.texts.addComment ? this.core.options.texts.addComment : "Add a comment at",
+        minutes: this.core.options.texts.minutes ? this.core.options.texts.minutes : "minutes",
+        placeholder: this.core.options.texts.commentPlaceholder ? this.core.options.texts.commentPlaceholder : "Put a comment here",
+        send: this.core.options.texts.sendComment ? this.core.options.texts.sendComment : "Send"
+      }
     } else {
-      var addAt = "Add a comment at";
-      var minutes = "minutes";
-      var placeholder = "Put a comment here";
+      var formText = {
+        addAt: "Add a comment at",
+        minutes: "minutes",
+        placeholder: "Put a comment here",
+        send: "Send"
+      }
+
     }
 
-    $(this.$el.formComment).html(JST.form({addAt: 'sdsd'}))
+    $(this.$el.formComment).html(JST.form(formText))
           .addClass('form-comment')
           .append(styleForm)
           .append(styleOptions)
@@ -128,8 +135,8 @@ class Comments extends UiCorePlugin {
     // [OPTION] Icon for add a new comment or Text
     if (this.core.options.iconComment) {
       this.core.mediaControl.$el.find('.add-comment').addClass(this.core.options.iconComment);
-    } else if (this.core.options.commentText && this.core.options.commentText.add) {
-      this.core.mediaControl.$el.find('.add-comment').text(this.core.options.commentText.add);
+    } else if (this.core.options.texts && this.core.options.texts.addCommentLink) {
+      this.core.mediaControl.$el.find('.add-comment').text(this.core.options.texts.addCommentLink);
     } else {
       this.core.mediaControl.$el.find('.add-comment').text('Comment');
     }

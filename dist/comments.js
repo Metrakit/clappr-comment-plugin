@@ -3,7 +3,7 @@
 module.exports = require("./src/main");
 
 
-//# sourceURL=C:/www/project1/clappr/index.js
+//# sourceURL=C:/wamp/www/clappr/index.js
 },{"./src/main":7}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3198,7 +3198,7 @@ System.get("traceur-runtime@0.0.79/src/runtime/polyfills/polyfills.js" + '');
 var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null);
 module.exports = {
   'add': _.template('<span class="add-comment"></span>'),
-  'form': _.template('<form>	<textarea name="comment" placeholder="Put a comment here"></textarea>	<input name="picture" type="file" />	<p><%- addAt %> <strong class="comment-time">0</strong></p>	<div class="submit-comment">		<button type="button">Send</button>	</div></form>'),
+  'form': _.template('<form>	<textarea name="comment" placeholder="<%- placeholder %>"></textarea>	<input name="picture" type="file" />	<p><%- addAt %> <strong class="comment-time">0</strong> <%- minutes %></p>	<div class="submit-comment">		<button type="button"><%- send %></button>	</div></form>'),
   CSS: {
     'add': '.comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-right:3px}.comments-controls[data-comments-controls] .add-comment{cursor:pointer;opacity:.8;font-weight:lighter}.comments-controls[data-comments-controls] .add-comment:before{font-size:16px}.comments-controls[data-comments-controls] .add-comment:hover{text-shadow:rgba(255,255,255,.8) 0 0 5px;opacity:1}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.img-comment{min-width:100px;min-height:50px}.img-comment img{max-width:200px;max-height:200px}.img-comment .spinner-three-bounce{top:25%}.img-comment .spinner-three-bounce>div{width:10px;height:10px}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}',
     'form': '.form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment button,.form-comment input,.form-comment textarea{font:initial;font-size:initial;line-height:initial;color:initial}.form-comment p{color:initial;font-size:initial!important}.form-comment input[type=file]{display:none}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}'
@@ -3206,7 +3206,7 @@ module.exports = {
 };
 
 
-//# sourceURL=C:/www/project1/clappr/src/jst.js
+//# sourceURL=C:/wamp/www/clappr/src/jst.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],7:[function(require,module,exports){
 (function (global){
@@ -3264,24 +3264,30 @@ var $Comments = Comments;
     }
     styleOptions += "</style>";
     this.$el.formComment = document.createElement("div");
-    if (this.core.options.commentText) {
-      var addAt = this.core.options.commentText.addAtminutes ? this.core.options.commentText.addAt : "Add a comment at";
-      var seconds = this.core.options.commentText.seconds ? this.core.options.commentText.minutes : "minutes";
-      var placeholder = this.core.options.commentText.placeholder ? this.core.options.commentText.placeholder : "Put a comment here";
+    if (this.core.options.texts) {
+      var formText = {
+        addAt: this.core.options.texts.addComment ? this.core.options.texts.addComment : "Add a comment at",
+        minutes: this.core.options.texts.minutes ? this.core.options.texts.minutes : "minutes",
+        placeholder: this.core.options.texts.commentPlaceholder ? this.core.options.texts.commentPlaceholder : "Put a comment here",
+        send: this.core.options.texts.sendComment ? this.core.options.texts.sendComment : "Send"
+      };
     } else {
-      var addAt = "Add a comment at";
-      var minutes = "minutes";
-      var placeholder = "Put a comment here";
+      var formText = {
+        addAt: "Add a comment at",
+        minutes: "minutes",
+        placeholder: "Put a comment here",
+        send: "Send"
+      };
     }
-    $(this.$el.formComment).html(JST.form({addAt: 'sdsd'})).addClass('form-comment').append(styleForm).append(styleOptions);
+    $(this.$el.formComment).html(JST.form(formText)).addClass('form-comment').append(styleForm).append(styleOptions);
     this.core.mediaControl.container.$el.append(this.$el.formComment);
     this.core.mediaControl.container.$el.find('.form-comment').click(function(e) {
       e.stopPropagation();
     });
     if (this.core.options.iconComment) {
       this.core.mediaControl.$el.find('.add-comment').addClass(this.core.options.iconComment);
-    } else if (this.core.options.commentText && this.core.options.commentText.add) {
-      this.core.mediaControl.$el.find('.add-comment').text(this.core.options.commentText.add);
+    } else if (this.core.options.texts && this.core.options.texts.addCommentLink) {
+      this.core.mediaControl.$el.find('.add-comment').text(this.core.options.texts.addCommentLink);
     } else {
       this.core.mediaControl.$el.find('.add-comment').text('Comment');
     }
@@ -3412,7 +3418,7 @@ var $Comments = Comments;
 module.exports = window.Comments = Comments;
 
 
-//# sourceURL=C:/www/project1/clappr/src/main.js
+//# sourceURL=C:/wamp/www/clappr/src/main.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./jst":6,"./styler":8,"events":2,"ui_core_plugin":"ui_core_plugin"}],8:[function(require,module,exports){
 (function (global){
@@ -3427,6 +3433,6 @@ var Styler = {getStyleFor: function(name, options) {
 module.exports = Styler;
 
 
-//# sourceURL=C:/www/project1/clappr/src/styler.js
+//# sourceURL=C:/wamp/www/clappr/src/styler.js
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./jst":6,"zepto":"zepto"}]},{},[5,1]);
