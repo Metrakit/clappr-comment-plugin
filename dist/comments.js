@@ -1764,13 +1764,13 @@ module.exports = {
 
   add: template("<span class=\"add-comment\"></span>"),
 
-  form: template("<form>\t<textarea name=\"comment\" placeholder=\"<%- placeholder %>\"></textarea>\t<input name=\"picture\" type=\"file\" />\t<p><%- addAt %> <strong class=\"comment-time\">0</strong> <%- minutes %></p>\t<div class=\"submit-comment\">\t\t<button type=\"button\"><%- send %></button>\t</div></form>"),
+  form: template("<div class=\"form-comment-header\">\t<%- addAt %> <strong class=\"comment-time\">0</strong> <%- minutes %></div><form>\t<div class=\"text-center\">\t\t<img src=\"\">\t</div>\t<textarea name=\"comment\" placeholder=\"<%- placeholder %>\"></textarea>\t<div class=\"text-center\">\t\t<input id=\"picture\" name=\"picture\" type=\"file\" />\t\t<label for=\"picture\">Add a gif</label>\t\t<div class=\"submit-comment\">\t\t\t<button type=\"button\"><%- send %></button>\t\t</div>\t</div></form>"),
 
   CSS: {
 
     add: ".comments-controls[data-comments-controls]{display:inline-block;float:left;color:#fff;line-height:32px;font-size:10px;font-weight:700;margin-right:3px}.comments-controls[data-comments-controls] .add-comment{cursor:pointer;opacity:.8;font-weight:lighter}.comments-controls[data-comments-controls] .add-comment:before{font-size:16px}.comments-controls[data-comments-controls] .add-comment:hover{text-shadow:rgba(255,255,255,.8) 0 0 5px;opacity:1}.comments-bar{display:inline-block;float:left;line-height:32px;font-size:10px;font-weight:700;margin-left:6px}.comment-pointer{position:absolute;left:20px;top:8px;width:2px;height:8px;background:#90ee90;color:#90ee90;transition:background .2s linear}.comment-pointer:hover{background:red}.video-comment{color:#fff;text-align:left;font-size:12px!important}.comment-actif{padding:5px!important}.img-comment{min-width:100px;min-height:50px}.img-comment img{max-width:200px;max-height:200px}.img-comment .spinner-three-bounce{top:25%}.img-comment .spinner-three-bounce>div{width:10px;height:10px}.media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-scrubber[data-seekbar]{z-index:99}.seek-time[data-seek-time]{height:initial!important}",
 
-    form: ".form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;padding:5px!important;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment button,.form-comment input,.form-comment textarea{font:initial;font-size:initial;line-height:initial;color:initial}.form-comment p{color:initial;font-size:initial!important}.form-comment input[type=file]{display:none}.form-comment textarea{width:100%}.form-comment .submit-comment{text-align:center}.show-form{visibility:visible;opacity:.9}" }
+    form: ".form-comment{position:absolute;width:50%;margin-left:auto;margin-right:auto;text-align:left;background:#fff;right:5px;bottom:100px;z-index:999999;visibility:hidden;opacity:0;transition:hidden 0s .2s,opacity .2s linear;border-radius:5px;cursor:default}.form-comment .form-comment-header{padding:2px 5px;background:#888;border-top-left-radius:5px;border-top-right-radius:5px}.form-comment form{padding:5px!important}.form-comment img{max-height:50px;max-width:100px}.form-comment button,.form-comment input,.form-comment textarea{font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;font-size:initial;line-height:initial;color:initial}.form-comment p{color:initial;font-size:initial!important}.form-comment input[type=file]{width:.1px;height:.1px;opacity:0;overflow:hidden;position:absolute;z-index:-1}.form-comment button[type=button],.form-comment input[type=file]+label{display:inline-block;padding:2px 5px;font-size:1.25em;font-weight:700}.form-comment input[type=file]+label{color:#fff;background-color:#000;cursor:pointer}.form-comment button[type=button]{color:#fff;background-color:green;cursor:pointer;border:0;line-height:1.4}.form-comment button[type=button]:focus,.form-comment button[type=button]:hover,.form-comment input[type=file]+label:hover,.form-comment input[type=file]:focus+label{background-color:red}.form-comment .text-center{text-align:center}.form-comment textarea{width:100%}.form-comment .submit-comment{display:inline-block}.show-form{visibility:visible;opacity:.9}" }
 };
 
 },{"lodash.template":3}],19:[function(require,module,exports){
@@ -1949,6 +1949,16 @@ var Comments = (function (_UICorePlugin) {
         this.core.mediaControl.$seekBarContainer.append(this.commentPointer);
 
         this.core.mediaControl.seekTime.$el.prepend("<div class=\"video-comment\"></div>");
+
+        $(".form-comment input[type=\"file\"]").change(function () {
+          if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              $(".form-comment img").attr("src", e.target.result);
+            };
+            reader.readAsDataURL(this.files[0]);
+          }
+        });
       }
     },
     getComments: {

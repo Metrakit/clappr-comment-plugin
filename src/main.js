@@ -155,6 +155,16 @@ class Comments extends UICorePlugin {
 
     this.core.mediaControl.seekTime.$el.prepend('<div class="video-comment"></div>')
 
+    $('.form-comment input[type="file"]').change(function(){
+      if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+              $('.form-comment img').attr('src', e.target.result);
+          }
+          reader.readAsDataURL(this.files[0]);
+      }
+    });
+
   }
 
 

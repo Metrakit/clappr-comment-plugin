@@ -1,8 +1,16 @@
+<div class="form-comment-header">
+	<%- addAt %> <strong class="comment-time">0</strong> <%- minutes %>
+</div>
 <form>
+	<div class="text-center">
+		<img src="">
+	</div>
 	<textarea name="comment" placeholder="<%- placeholder %>"></textarea>
-	<input name="picture" type="file" />
-	<p><%- addAt %> <strong class="comment-time">0</strong> <%- minutes %></p>
-	<div class="submit-comment">
-		<button type="button"><%- send %></button>
+	<div class="text-center">
+		<input id="picture" name="picture" type="file" />
+		<label for="picture">Add a gif</label>
+		<div class="submit-comment">
+			<button type="button"><%- send %></button>
+		</div>
 	</div>
 </form>

@@ -1,9 +1,23 @@
 .form-comment {
+	.form-comment-header {
+		padding: 2px 5px 2px 5px;
+		background: #888888;
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+	}
 
+	form {
+		padding: 5px !important;
+	}
+
+	img {
+		max-height: 50px;
+		max-width: 100px;
+	}
 
 	// RAZ (Bootstrap, ...)
 	button, input, textarea {
-		font: initial;
+		font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 		font-size: initial;
 		line-height: initial; 
 		color: initial;
@@ -14,7 +28,44 @@
 	}
 
 	input[type="file"] {
-	    display: none;
+	    width: 0.1px;
+		height: 0.1px;
+		opacity: 0;
+		overflow: hidden;
+		position: absolute;
+		z-index: -1;
+	}
+
+	input[type="file"] + label, button[type="button"] {
+		display: inline-block;
+		padding: 2px 5px 2px 5px;
+	    font-size: 1.25em;
+	    font-weight: 700;
+	}
+
+	input[type="file"] + label {
+	    color: white;
+	    background-color: black;
+	    cursor: pointer;
+	}
+
+	button[type="button"] {
+	    color: white;
+	    background-color: green;
+	    cursor: pointer;
+	    border: 0;
+	    line-height: 1.4;
+	}
+
+	input[type="file"]:focus + label,
+	input[type="file"] + label:hover,
+	button[type="button"]:focus,
+	button[type="button"]:hover {
+	    background-color: red;
+	}
+
+	.text-center {
+		text-align: center;
 	}
 
 	position: absolute;
@@ -26,7 +77,6 @@
 	right:5px;
 	bottom: 100px;
 	z-index: 999999;
-	padding: 5px !important;
 	visibility: hidden;
 	opacity: 0;
 	transition: hidden 0s 0.2s, opacity 0.2s linear;
@@ -41,7 +91,8 @@
 	}
 
 	.submit-comment {
-		text-align:center;
+		display: inline-block;
+		//text-align:center;
 	}
 
 }
