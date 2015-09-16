@@ -1,0 +1,26 @@
+{
+  "name": "clappr-comment-plugin",
+  "main": "dist/comments.min.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/Metrakit/clappr-comment-plugin",
+  "description": "A Clappr plugin for make your videos more social",
+  "keywords": [
+    "clappr",
+    "comments",
+    "plugin",
+    "social"
+  ],
+  "authors": [
+    "Metrakit <contact@jordane.net> (http://jordane.net)"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "build",
+    "dist/assets",
+    "dist/clappr.js",
+    "dist/clappr.min.js"
+  ]
+}
