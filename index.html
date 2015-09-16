@@ -2,15 +2,15 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <script type="text/javascript" charset="utf-8" src="dist/underscore-min.js"></script>
-  <script type="text/javascript" charset="utf-8" src="dist/clappr.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="http://cdn.clappr.io/latest/clappr.min.js"></script>
   <script type="text/javascript" charset="utf-8" src="dist/comments.js"></script>
 
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 
-  <!-- Live reload -->
-  <script src="http://localhost:35729/livereload.js"></script>
+  <!-- Live reload - only for development -->
+  <script src="http://clappr.dev:35729/livereload.js"></script>
 
   <title>Clappr comment plugin - Labs of Jordane</title>
   <script type="text/javascript" charset="utf-8">
@@ -24,8 +24,8 @@
 
         // Comment options
         videoId: 1,
-        urlGetComments: "http://larabb.com/comments-video",
-        urlAddComments: "http://larabb.com/submit-comment",
+        urlGetComments: "http://labs.jordane.net/clappr-comment/comments-video",
+        urlAddComments: "http://labs.jordane.net/clappr-comment/submit-comment",
         iconComment: "fa fa-comment-o",
         iconFont: "FontAwesome",
         pointerColor: "blue",
@@ -67,8 +67,8 @@
     <h3>Options</h3>
 
     <pre>
-      urlGetComments: "http://minetop.com/comments-video",
-      urlAddComments: "http://minetop.com/submit-comment",
+      urlGetComments: "http://localhost/comments-video",
+      urlAddComments: "http://localhost/submit-comment",
       iconComment: "fa fa-comment-o",
       iconFont: "FontAwesome",
       pointerColor: "blue",

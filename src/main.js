@@ -1,17 +1,9 @@
-var UiCorePlugin = require('ui_core_plugin');
+var UICorePlugin = Clappr.UICorePlugin;
 var JST = require('./jst');
 var Styler = require('./styler');
-var Events = require('events');
-var _ = require('underscore');
+var Events = Clappr.Events;
 
-/*
-
-Creer un autre plugin pour partager sur les resaux sociaux avec le temps actuel en utilisant les ancres, exemple :
-#temps=20
-
-*/
-
-class Comments extends UiCorePlugin {
+class Comments extends UICorePlugin {
 
   get name() { return 'comments'; }
 
@@ -69,13 +61,15 @@ class Comments extends UiCorePlugin {
   make() {
       // Create new DOM element add a button
     var styleAddBtn = Styler.getStyleFor('add');
+    console.log(styleAddBtn[0])
 
     this.$playButton = this.core.mediaControl.$el.find('.media-control-button');
-
     this.$el.html(JST.add)
-          .append(styleAddBtn)
+          .append(styleAddBtn[0]);
 
     this.core.mediaControl.$('.media-control-right-panel[data-media-control]').append(this.$el);
+
+
 
     // Create new DOM element for add the form
     var styleForm = Styler.getStyleFor('form');
@@ -95,6 +89,7 @@ class Comments extends UiCorePlugin {
     if (this.core.options.pointerColor) {
       styleOptions += ".comment-pointer { background: " + this.core.options.pointerColor + " !important; } ";
     }    
+
 
     styleOptions += "</style>";
 
@@ -117,9 +112,9 @@ class Comments extends UiCorePlugin {
 
     }
 
-    $(this.$el.formComment).html(JST.form(formText))
+   $(this.$el.formComment).html(JST.form(formText))
           .addClass('form-comment')
-          .append(styleForm)
+          .append(styleForm[0])
           .append(styleOptions)
     this.core.mediaControl.container.$el.append(this.$el.formComment)
 

@@ -6,17 +6,16 @@ var glob = require('glob').sync;
 var mkdirp = require('mkdirp').sync;
 var path = require('path');
 var fs = require('fs');
-var _ = require('underscore');
+var template = require('lodash.template');
 
+var codeTemplate = template(fs.readFileSync('bin/.hook_template').toString());
 
-var codeTemplate = _.template(fs.readFileSync('bin/.hook_template').toString());
-
-var jstFile = './src/jst.js';
+var jstFile = './jst.js';
 
 function format(filePath) {
-  return fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
+  var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
+  return {name: 'comments', content: content};
 }
-
 
 function copyFiles(asset) {
   var targetDir = path.extname(asset) === '.js' ? 'dist/' : 'dist/assets';
@@ -24,20 +23,10 @@ function copyFiles(asset) {
     .pipe(fs.createWriteStream(path.join(targetDir, path.basename(asset))));
 }
 
+var templates = glob('build/**/*.html').map(format);
+var styles = glob('build/**/*.css').map(format);
 
-
-var html = [
-  {name: 'add', content: glob('build/add.html').map(format)},
-  {name: 'form', content: glob('build/form.html').map(format)},
-];
-
-var css = [
-  {name: 'add', content: glob('build/add.css').map(format)},
-  {name: 'form', content: glob('build/form.css').map(format)},
-];
-
-
-fs.writeFileSync(jstFile, codeTemplate({templates: html, styles: css}));
+fs.writeFileSync(jstFile, codeTemplate({templates: templates, styles: styles}));
 
 mkdirp('dist/assets/');
 

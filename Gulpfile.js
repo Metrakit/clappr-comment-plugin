@@ -1,7 +1,7 @@
 var gulp = require('gulp');
 var sass = require('gulp-sass');
 var minifyCSS = require('gulp-minify-css');
-var es6ify = require('es6ify');
+var babelify = require('babelify');
 var rename = require('gulp-rename');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
@@ -19,27 +19,21 @@ var files = {
   html: 'public/*.html'
 };
 
+var watch_paths = {
+  js: ['./*.js', './src/*.js'],
+  assets: './public/*.{html,scss,css}'
+};
+
 gulp.task('pre-build', ['sass', 'copy-html', 'copy-css'], function(done) {
   return exec('node bin/hook.js', done);
 });
 
 gulp.task('build', ['pre-build'], function(b) {
   return browserify()
-    .transform(es6ify.configure(/^(?!.*node_modules)+.+\.js$/))
-    .add(es6ify.runtime)
+    .transform(babelify)
     .add('./index.js', {entry: true})
-    .external('ui_plugin')
-    .external('ui_object')
-    .external('base_object')
-    .external('browser')
-    .external('zepto')
     .external('underscore')
-    .external('media_control')
-    .external('playback')
-    .external('core_plugin')
-    .external('ui_core_plugin')
-    .external('container_plugin')
-    .external('ui_container_plugin')
+    .external('zepto')
     .bundle()
     .pipe(source('main.js'))
     .pipe(rename( 'comments.js'))
@@ -48,22 +42,10 @@ gulp.task('build', ['pre-build'], function(b) {
 
 gulp.task('release', ['pre-build'], function() {
   return browserify()
-    .transform(es6ify.configure(/^(?!.*node_modules)+.+\.js$/))
-    .add(es6ify.runtime)
+    .transform(babelify)
     .add('./index.js', {entry: true})
-    .external('ui_plugin')
-    .external('ui_object')
-    .external('base_object')
-    .external('browser')
-    .external('zepto')
     .external('underscore')
-    .external('media_control')
-    .external('playback')
-    .external('core_plugin')
-    .external('ui_core_plugin')
-    .external('container_plugin')
-    .external('ui_container_plugin')
-    .external('mediator')
+    .external('zepto')
     .bundle()
     .pipe(source('main.js'))
     .pipe(rename( 'comments.min.js'))
@@ -101,14 +83,14 @@ gulp.task('serve', ['build', 'watch'], function() {
 gulp.task('watch', function() {
   var reloadServer = livereload();
 
-  var js = gulp.watch('./src/*.js');
+  var js = gulp.watch(watch_paths.js);
   js.on('change', function(event) {
     gulp.start('build', function() {
       reloadServer.changed(event.path);
     });
   });
 
-  var assets = gulp.watch('./public/*.{html,scss,css}');
+  var assets = gulp.watch(watch_paths.assets);
   assets.on('change', function(event) {
     gulp.start(['build'], function() {
       reloadServer.changed(event.path);
@@ -116,5 +98,3 @@ gulp.task('watch', function() {
   });
   util.log(util.colors.bgGreen('Watching for changes...'));
 });
-
-

@@ -1,15 +1,9 @@
-// Copyright 2014 Globo.com Player authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-var $ = require('zepto');
-var _ = require('underscore');
 var JST = require('./jst');
+var $ = require('clappr-zepto');
 
 var Styler = {
-  getStyleFor: function(name, options) {
-    options = options || {};
-    return $('<style class="clappr-style"></style>').html(_.template(JST.CSS[name])(options))[0];
+  getStyleFor: function(name) {
+    return $('<style></style>').html(JST.CSS[name].toString());
   }
 };
 
