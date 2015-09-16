@@ -67,6 +67,11 @@ You can also add some options :
 - enablePicture : (boolean) availability to add pictures in the comments
 - texts : multiple texts to translate
 
+## Demo
+
+http://labs.jordane.net/clappr-comment
+
+
 ## Author
 
 - Metrakit (Jordane Jouffroy) : contact@jordane.net
