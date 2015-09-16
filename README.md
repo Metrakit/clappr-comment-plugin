@@ -24,14 +24,17 @@ $ git clone https://github.com/Metrakit/clappr-comment-plugin
 ### Using the Plugin
 
 Add the comments Plugin in the Clappr configuration
-```html
-      plugins: {
-        core: [Comments]
-      },
+```javascript
+      var player = new Clappr.Player({
+        ...
+        plugins: {
+          core: [Comments]
+        },
+        ...
 ```
 
 You can also add some options :
-```html
+```javascript
       plugins: {
         core: [Comments]
       },
@@ -52,4 +55,15 @@ You can also add some options :
         sendComment: "Send"
       }
 ```
+
+### Options availables
+
+- videoId : (integer) Id of the video
+- urlGetComments : (string) the URL for get the comments
+- urlAddComments : (string) the URL for add the comments
+- iconComment : (string) the icon for add a comment
+- iconFont : (string) the font for the icons
+- pointerColor : the color of the cursors on the seekbar
+- enablePicture : (boolean) availability to add pictures in the comments
+- texts : Multiple texts to translate
 
