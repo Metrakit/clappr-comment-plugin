@@ -1,2 +1,5 @@
 build
 node_modules
+dist/assets
+dist/clappr.js
+dist/clappr.min.js
