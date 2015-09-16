@@ -232,16 +232,16 @@ class Comments extends UICorePlugin {
 
       if (this.core.options.videoId && $(pointer).attr('data-imgUrl')) {
         elem.core.mediaControl.seekTime.$('.video-comment').prepend('<div class="img-comment"><div class="spinner-three-bounce" data-spinner><div data-bounce1></div><div data-bounce2></div><div data-bounce3></div></div></div>')
-
-        $("<img />").attr('src', $(pointer).attr('data-imgUrl'))
-        .load(function() {
+        var img = $("<img />").attr('src', $(pointer).attr('data-imgUrl'));
+        img.on('load', function(){
+            console.log("test")
             if (!this.complete || typeof this.naturalWidth == "undefined" || this.naturalWidth == 0) {
                 // wrong image
             } else {
+              console.log(this)
                 elem.core.mediaControl.seekTime.$('.img-comment').html(this)
-            }
-        });
-    
+            }        
+        }); 
       }
   }
 
