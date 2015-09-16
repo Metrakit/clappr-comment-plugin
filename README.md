@@ -67,3 +67,10 @@ You can also add some options :
 - enablePicture : (boolean) availability to add pictures in the comments
 - texts : multiple texts to translate
 
+## Author
+
+- Metrakit (Jordane Jouffroy) : contact@jordane.net
+
+## Credits
+
+The Clappr Team : https://github.com/clappr/clappr/graphs/contributors
