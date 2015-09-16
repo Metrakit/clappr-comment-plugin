@@ -8,14 +8,15 @@ var path = require('path');
 var fs = require('fs');
 var template = require('lodash.template');
 
+
 var codeTemplate = template(fs.readFileSync('bin/.hook_template').toString());
 
-var jstFile = './jst.js';
+var jstFile = './src/jst.js';
 
 function format(filePath) {
-  var content = fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
-  return {name: 'comments', content: content};
+  return fs.readFileSync(filePath).toString().replace(/\r?\n|\r/g, '');
 }
+
 
 function copyFiles(asset) {
   var targetDir = path.extname(asset) === '.js' ? 'dist/' : 'dist/assets';
@@ -23,10 +24,20 @@ function copyFiles(asset) {
     .pipe(fs.createWriteStream(path.join(targetDir, path.basename(asset))));
 }
 
-var templates = glob('build/**/*.html').map(format);
-var styles = glob('build/**/*.css').map(format);
 
-fs.writeFileSync(jstFile, codeTemplate({templates: templates, styles: styles}));
+
+var html = [
+  {name: 'add', content: glob('build/add.html').map(format)},
+  {name: 'form', content: glob('build/form.html').map(format)},
+];
+
+var css = [
+  {name: 'add', content: glob('build/add.css').map(format)},
+  {name: 'form', content: glob('build/form.css').map(format)},
+];
+
+
+fs.writeFileSync(jstFile, codeTemplate({templates: html, styles: css}));
 
 mkdirp('dist/assets/');
 
