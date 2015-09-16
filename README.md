@@ -65,5 +65,5 @@ You can also add some options :
 - iconFont : (string) the font for the icons
 - pointerColor : the color of the cursors on the seekbar
 - enablePicture : (boolean) availability to add pictures in the comments
-- texts : Multiple texts to translate
+- texts : multiple texts to translate
 
