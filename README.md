@@ -21,8 +21,24 @@ $ bower install clappr-comment-plugin
 $ git clone https://github.com/Metrakit/clappr-comment-plugin
 ```
 
+### CDN (jsDelivr)
+
+```
+https://cdn.jsdelivr.net/clappr.comment/latest/comments.min.js
+```
+
 ### Using the Plugin
 
+Add both Clappr and Comments plugin scripts to your HTML:
+
+```html
+<head>
+  <script type="text/javascript" src="http://cdn.clappr.io/latest/clappr.min.js"></script>
+  <script type="text/javascript" src="dist/comments.min.js"></script>
+  <!-- OR jsDelivr CDN -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/clappr.comment/latest/comments.min.js"></script>
+</head>
+```
 Add the comments Plugin in the Clappr configuration
 ```javascript
       var player = new Clappr.Player({
